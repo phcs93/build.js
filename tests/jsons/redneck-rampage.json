@@ -1,5 +1,5 @@
 {
-	"expected-grp-file-names-and-sizes": [
+	"expected-storage-file-names-and-sizes": [
 		{ "name": "TILES001.ART", "size": 5404238 },
 		{ "name": "TILES000.ART", "size": 1399557 },
 		{ "name": "TILES002.ART", "size": 72442 },

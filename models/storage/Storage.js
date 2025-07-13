@@ -1,0 +1,23 @@
+GRP = (() => { try { return require("./GRP.js"); } catch {} } )() ?? GRP;
+PK3 = (() => { try { return require("./PK3.js"); } catch {} } )() ?? PK3;
+RFF = (() => { try { return require("./RFF.js"); } catch {} } )() ?? RFF;
+
+// this class is just an abstraction that identifies the provided storage file and reads it accordingly
+function Storage(bytes) {
+
+    // grp
+    if (String.fromCharCode(...bytes.slice(0, 12)) === "KenSilverman") {
+        return new GRP(bytes);
+    }
+    
+    // pk3
+    if (bytes[0] === 0x50 && bytes[1] === 0x4B && bytes[2] === 0x03 && bytes[3] === 0x04) {
+        return new PK3(bytes);
+    }
+
+    // rff
+    // todo
+
+}
+
+try { module.exports = Storage; } catch {}

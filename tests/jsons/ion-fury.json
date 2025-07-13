@@ -1,5 +1,5 @@
 {
-	"expected-zip-file-names-and-sizes": [
+	"expected-storage-file-names-and-sizes": [
 		{ "name": "3dr_480.png", "size": 56409 },
 		{ "name": "content.def", "size": 8226 },
 		{ "name": "fury.def", "size": 39 },

@@ -1,5 +1,5 @@
 {
-	"expected-grp-file-names-and-sizes": [
+	"expected-storage-file-names-and-sizes": [
 		{ "name": "LOGO.ANM", "size": 1507336 },
 		{ "name": "CINEOV2.ANM", "size": 655497 },
 		{ "name": "CINEOV3.ANM", "size": 395044 },

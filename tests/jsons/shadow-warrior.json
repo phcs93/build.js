@@ -1,5 +1,5 @@
 {
-	"expected-grp-file-names-and-sizes": [
+	"expected-storage-file-names-and-sizes": [
 		{ "name": "SWREG.BIN", "size": 4000 },
 		{ "name": "SWCODE.SYM", "size": 138960 },
 		{ "name": "SWDATA.SYM", "size": 76392 },
