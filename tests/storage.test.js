@@ -1,7 +1,7 @@
 const { suite, test } = require("node:test");
 const assert = require("node:assert");
 const fs = require("node:fs");
-const Storage = require("../models/storage/Storage.js");
+const Storage = require("../models/Storage.js");
 
 suite("storage", () => {
 
@@ -30,20 +30,22 @@ suite("storage", () => {
 
     for (const game of games) {
 
-        console.log(`testing ${game.name}...`);
+        console.log(`initializing ${game.name}...`);
 
         const json = require(`./jsons/${game.name}.json`);
         const bytes = fs.readFileSync(game.path);
         const storage = new Storage(bytes);
 
-        test(`read-${game.name}-storage-file-count-names-and-sizes`, () => {
+        test(`read-${game.name}-storage-file-count-names-and-sizes`, args => {
+            console.log(`${args.name}...`);
             const actuall = storage.Files.map(f => ({name: f.name, size: f.size}));
             //fs.writeFileSync(`temp-${game.name}.json`, JSON.stringify(actuall, null, "\t"));
             assert.equal(storage.Files.length, json[`expected-storage-file-names-and-sizes`].length);
             assert.deepStrictEqual(actuall, json[`expected-storage-file-names-and-sizes`]);
         });
 
-        test(`write-${game.name}-storage-file-count-names-and-sizes`, () => {
+        test(`write-${game.name}-storage-file-count-names-and-sizes`, args => {
+            console.log(`${args.name}...`);
             const buffer = Array.from("test", c => c.charCodeAt(0));
             storage.Files.push({
                 name: "test.txt",

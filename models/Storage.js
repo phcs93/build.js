@@ -1,6 +1,6 @@
-GRP = (() => { try { return require("./GRP.js"); } catch {} } )() ?? GRP;
-PK3 = (() => { try { return require("./PK3.js"); } catch {} } )() ?? PK3;
-RFF = (() => { try { return require("./RFF.js"); } catch {} } )() ?? RFF;
+GRP = (() => { try { return require("./storage/GRP.js"); } catch {} } )() ?? GRP;
+PK3 = (() => { try { return require("./storage/PK3.js"); } catch {} } )() ?? PK3;
+RFF = (() => { try { return require("./storage/RFF.js"); } catch {} } )() ?? RFF;
 
 // this class is just an abstraction that identifies the provided storage file and reads it accordingly
 function Storage(bytes) {
