@@ -1,33 +1,37 @@
 ByteReader = (() => { try { return require("../../scripts/ByteReader.js"); } catch {} } )() ?? ByteReader;
 ByteWriter = (() => { try { return require("../../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
 
-function GRP (bytes) {
+class GRP {
 
-    // create byte reader
-    const reader = new ByteReader(bytes);
+    constructor (bytes) {
 
-    // read ken silverman signature
-    this.Signature = reader.string(12);
+        // create byte reader
+        const reader = new ByteReader(bytes);
 
-    // read number of files
-    this.Files = new Array(reader.uint32());
+        // read ken silverman signature
+        this.Signature = reader.string(12);
 
-    // read file names and sizes
-    for (let i = 0; i < this.Files.length; i++) {
-        this.Files[i] = {
-            name: reader.string(12),
-            size: reader.uint32(),
-            bytes: null
+        // read number of files
+        this.Files = new Array(reader.uint32());
+
+        // read file names and sizes
+        for (let i = 0; i < this.Files.length; i++) {
+            this.Files[i] = {
+                name: reader.string(12),
+                size: reader.uint32(),
+                bytes: null
+            }
         }
-    }
 
-    // read file bytes
-    for (let i = 0; i < this.Files.length; i++) {
-        this.Files[i].bytes = reader.read(this.Files[i].size);
+        // read file bytes
+        for (let i = 0; i < this.Files.length; i++) {
+            this.Files[i].bytes = reader.read(this.Files[i].size);
+        }
+
     }
 
     // serialize function
-    this.Serialize = () => {
+    Serialize = () => {
 
         // create byte writer
         const writer = new ByteWriter(12 + 4 + this.Files.length * 12 + this.Files.length * 4 + this.Files.reduce((sum, f) => sum + f.bytes.length, 0));
@@ -57,7 +61,7 @@ function GRP (bytes) {
         // return array of bytes
         return writer.bytes;
 
-    };
+    }
 
 }
 

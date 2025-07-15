@@ -2,53 +2,57 @@ ByteReader = (() => { try { return require("../../scripts/ByteReader.js"); } cat
 ByteWriter = (() => { try { return require("../../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
 
 // reference: http://dukertcm.com/knowledge-base/downloads-rtcm/general-tools/unpackssi.zip
-function SSI (bytes) {
+class SSI {
 
-    // create byte reader
-    const reader = new ByteReader(bytes);
+    constructor (bytes) {
 
-    // read file version (1 or 2)
-    this.Version = reader.uint32();
+        // create byte reader
+        const reader = new ByteReader(bytes);
 
-    // read number of files
-    this.Files = new Array(reader.uint32());
+        // read file version (1 or 2)
+        this.Version = reader.uint32();
 
-    // title
-    const numcharsTitle = reader.uint8();
-    this.Title = reader.string(32).slice(0, numcharsTitle);
+        // read number of files
+        this.Files = new Array(reader.uint32());
 
-    // runfile
-    if (this.Version === 2) {
-        const numcharsRunFile = reader.uint8();
-        this.RunFile = reader.string(12).slice(0, numcharsRunFile);
-    }
+        // title
+        const numcharsTitle = reader.uint8();
+        this.Title = reader.string(32).slice(0, numcharsTitle);
 
-    // description
-    this.Description = [];
-
-    for (let i = 0; i < 3; i++) {
-        const numcharsDescription = reader.uint8();
-        this.Description[i] = reader.string(70).slice(0, numcharsDescription);
-    }
-
-    // read file names and sizes
-    for (let i = 0; i < this.Files.length; i++) {
-        const numchars = reader.uint8();
-        this.Files[i] = {
-            name: reader.string(12).slice(0, numchars),
-            size: reader.uint32(),
-            fill: reader.read(34+1+69), // unknown
-            bytes: null
+        // runfile
+        if (this.Version === 2) {
+            const numcharsRunFile = reader.uint8();
+            this.RunFile = reader.string(12).slice(0, numcharsRunFile);
         }
-    }
 
-    // read file bytes
-    for (let i = 0; i < this.Files.length; i++) {
-        this.Files[i].bytes = reader.read(this.Files[i].size);
+        // description
+        this.Description = [];
+
+        for (let i = 0; i < 3; i++) {
+            const numcharsDescription = reader.uint8();
+            this.Description[i] = reader.string(70).slice(0, numcharsDescription);
+        }
+
+        // read file names and sizes
+        for (let i = 0; i < this.Files.length; i++) {
+            const numchars = reader.uint8();
+            this.Files[i] = {
+                name: reader.string(12).slice(0, numchars),
+                size: reader.uint32(),
+                fill: reader.read(34+1+69), // unknown
+                bytes: null
+            }
+        }
+
+        // read file bytes
+        for (let i = 0; i < this.Files.length; i++) {
+            this.Files[i].bytes = reader.read(this.Files[i].size);
+        }
+
     }
 
     // serialize function
-    this.Serialize = () => {
+    Serialize = () => {
 
         // create byte writer
         const writer = new ByteWriter(4 + 4 + 1 + 32 + 1 + 12 + 1 + 70 +1 + 70 + 1 + 70 + this.Files.length * (1+12+4+34+1+69) + this.Files.reduce((sum, f) => sum + f.bytes.length, 0));
