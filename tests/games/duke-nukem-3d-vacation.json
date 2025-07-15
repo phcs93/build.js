@@ -1,0 +1,26 @@
+{
+	"storage": {
+		"path": "C:/Games/Build Engine Games/.stuff/files/DUKE3D_ADDONS_SSI_FILE_ORIGINAL_RELEASES/VACA15.SSI",
+		"expected-files": [
+			{ "name": "CARIB.EXE", "size": 17632 },
+			{ "name": "VACADM1.MAP", "size": 18818 },
+			{ "name": "VACADM2.MAP", "size": 18478 },
+			{ "name": "VACADM3.MAP", "size": 43866 },
+			{ "name": "VACADM4.MAP", "size": 23778 },
+			{ "name": "DEFS.NOC", "size": 36087 },
+			{ "name": "GAME.NOC", "size": 98716 },
+			{ "name": "USER.NOC", "size": 45647 },
+			{ "name": "DEMO1.OMD", "size": 4995 },
+			{ "name": "DEMO2.OMD", "size": 4995 },
+			{ "name": "DEMO3.OMD", "size": 4995 },
+			{ "name": "MOD.PCS", "size": 145 },
+			{ "name": "UNMOD.PCS", "size": 150 },
+			{ "name": "VACATION.PRG", "size": 22201375 },
+			{ "name": "HACK.SCP", "size": 0 },
+			{ "name": "UNHACK.SCP", "size": 0 }
+		]
+	},
+	"map": {
+		"path": "E1M1.MAP"
+	}
+}
