@@ -1,6 +1,7 @@
 GRP = (() => { try { return require("./storage/GRP.js"); } catch {} } )() ?? GRP;
 PK3 = (() => { try { return require("./storage/PK3.js"); } catch {} } )() ?? PK3;
 RFF = (() => { try { return require("./storage/RFF.js"); } catch {} } )() ?? RFF;
+SSI = (() => { try { return require("./storage/SSI.js"); } catch {} } )() ?? SSI;
 
 // this class is just an abstraction that identifies the provided storage file and reads it accordingly
 function Storage(bytes) {
@@ -18,7 +19,10 @@ function Storage(bytes) {
     // rff
     if (String.fromCharCode(...bytes.slice(0, 3)) === "RFF") {
         return new RFF(bytes);
-    }    
+    }
+
+    // ssi
+    return new SSI(bytes);
 
 }
 

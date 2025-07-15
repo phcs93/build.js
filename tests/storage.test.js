@@ -13,6 +13,10 @@ suite("storage", () => {
         {
             name: "duke-nukem-3d",
             path: "C:/Games/Build Engine Games/Duke Nukem 3D/ports/produke/duke3d.grp"
+        },        
+        {
+            name: "duke-nukem-3d-vacation",
+            path: "C:/Games/Build Engine Games/.stuff/files/DUKE3D_ADDONS_SSI_FILE_ORIGINAL_RELEASES/VACA15.SSI"
         },
         {
             name: "ion-fury",
