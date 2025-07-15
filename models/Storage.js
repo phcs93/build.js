@@ -16,7 +16,9 @@ function Storage(bytes) {
     }
 
     // rff
-    // todo
+    if (String.fromCharCode(...bytes.slice(0, 3)) === "RFF") {
+        return new RFF(bytes);
+    }    
 
 }
 

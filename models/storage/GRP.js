@@ -7,7 +7,7 @@ function GRP (bytes) {
     const reader = new ByteReader(bytes);
 
     // read ken silverman signature
-    this.Signature = reader.readString(12);
+    this.Signature = reader.string(12);
 
     // read number of files
     this.Files = new Array(reader.uint32());
@@ -15,7 +15,7 @@ function GRP (bytes) {
     // read file names and sizes
     for (let i = 0; i < this.Files.length; i++) {
         this.Files[i] = {
-            name: reader.readString(12),
+            name: reader.string(12),
             size: reader.uint32(),
             bytes: null
         }
@@ -30,10 +30,10 @@ function GRP (bytes) {
     this.Serialize = () => {
 
         // create byte writer
-        const writer = new ByteWriter(12 + 4 + this.Files.length * 12 + this.Files.length * 4 + this.Files.reduce((sum, f) => sum + f.size, 0));
+        const writer = new ByteWriter(12 + 4 + this.Files.length * 12 + this.Files.length * 4 + this.Files.reduce((sum, f) => sum + f.bytes.length, 0));
 
         // write ken silverman string
-        writer.writeString(this.Signature);
+        writer.string(this.Signature, 12);
 
         // write number of files
         writer.int32(this.Files.length);
@@ -42,10 +42,10 @@ function GRP (bytes) {
         for (let i = 0; i < this.Files.length; i++) {
 
             // name
-            writer.writeString(this.Files[i].name.padEnd(12, '\0').slice(0, 12));
+            writer.string(this.Files[i].name, 12);
 
             // size
-            writer.int32(this.Files[i].size);
+            writer.int32(this.Files[i].bytes.length);
             
         }
 

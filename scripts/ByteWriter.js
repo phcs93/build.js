@@ -8,11 +8,11 @@ function ByteWriter (length) {
         this.index += bytes.length;
     };
 
-    this.int8 = v => this.write(v & 0xFF);
+    this.int8 = v => this.write([v & 0xFF]);
     this.int16 = v => this.write([v & 0xFF, (v >> 8) & 0xFF]);
     this.int32 = v => this.write([v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF]);
 
-    this.writeString = string => this.write([...Array.from(string, c => c.charCodeAt(0))]);
+    this.string = (string, length) => this.write([...string.padEnd(length, '\0').slice(0, length)].map(c => c.charCodeAt(0)));
 
 }
 

@@ -6,10 +6,10 @@ const Storage = require("../models/Storage.js");
 suite("storage", () => {
 
     const games = [
-        // {
-        //     name: "blood",
-        //     path: "C:/Games/Build Engine Games/Blood/ports/notblood/blood.rff"
-        // },
+        {
+            name: "blood",
+            path: "C:/Games/Build Engine Games/Blood/ports/notblood/blood.rff"
+        },
         {
             name: "duke-nukem-3d",
             path: "C:/Games/Build Engine Games/Duke Nukem 3D/ports/produke/duke3d.grp"
@@ -46,12 +46,11 @@ suite("storage", () => {
 
         test(`write-${game.name}-storage-file-count-names-and-sizes`, args => {
             console.log(`${args.name}...`);
-            const buffer = Array.from("test", c => c.charCodeAt(0));
+            const buffer = Uint8Array.from(Array.from("test", c => c.charCodeAt(0)));
             storage.Files.push({
                 name: "test.txt",
-                size: buffer.length,
                 bytes: buffer
-            });            
+            });
             const serialized = storage.Serialize();
             const unserialized = new Storage(serialized);
             assert.equal(unserialized.Files[unserialized.Files.length-1].name, "test.txt");

@@ -13,7 +13,7 @@ function ByteReader (bytes) {
     this.uint16 = () => this.int16() & 0xFFFF;
     this.uint32 = () => this.int32() & 0xFFFFFFFF;
 
-    this.readString = length => new Array(length).fill(0).map(() => String.fromCharCode(this.bytes[this.index++])).join("").replace(/\x00/g, "");
+    this.string = length => new Array(length).fill(0).map(() => String.fromCharCode(this.bytes[this.index++])).join("").replace(/\x00/g, "");
 
     this.read = length => this.bytes.slice(this.index, this.index += length);
 

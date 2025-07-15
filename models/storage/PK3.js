@@ -28,7 +28,7 @@ function PK3 (bytes) {
         const nameLength = reader.uint16();
         const extraLength = reader.uint16();
 
-        const name = reader.readString(nameLength);
+        const name = reader.string(nameLength);
         reader.index += extraLength;
 
         const compressedData = reader.read(compressedSize);
