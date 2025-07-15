@@ -16,7 +16,7 @@ suite("storage", () => {
         },
         {
             name: "ion-fury",
-            path: "C:/Program Files (x86)/Steam/steamapps/common/Ion Fury/fury.grp" // pk3
+            path: "C:/Program Files (x86)/Steam/steamapps/common/Ion Fury/fury.grp" // ion fury uses a pk3, calls it a grp but it is actually a zip file
         },
         {
             name: "redneck-rampage",
