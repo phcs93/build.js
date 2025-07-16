@@ -461,6 +461,9 @@
 		]
 	},
 	"map": {
-		"path": "E1L1.MAP"
+		"path": "E1L1.MAP",
+		"expected-sectors": 325,
+		"expected-walls": 1975,
+		"expected-sprites": 644
 	}
 }

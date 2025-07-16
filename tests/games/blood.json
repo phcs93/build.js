@@ -683,6 +683,9 @@
 		]
 	},
 	"map": {
-		"path": "E1M1.MAP"
+		"path": "E1M1.MAP",
+		"expected-sectors": 0,
+		"expected-walls": 0,
+		"expected-sprites": 0
 	}
 }

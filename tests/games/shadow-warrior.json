@@ -698,6 +698,9 @@
 		]
 	},
 	"map": {
-		"path": "E1M1.MAP"
+		"path": "$BULLET.MAP",
+		"expected-sectors": 486,
+		"expected-walls": 3314,
+		"expected-sprites": 1057
 	}
 }

@@ -12,16 +12,14 @@ suite("storage", () => {
         const json = require(`./games/${game}.json`);
         const storage = new Storage(fs.readFileSync(json.storage.path));
 
-        test(`read-${game}-storage (${storage.constructor.name})`, args => {
-            console.log(`${args.name}...`);
+        test(`read-${game}-storage (${storage.constructor.name})`, () => {
             const actuall = storage.Files.map(f => ({name: f.name, size: f.size}));
             //fs.writeFileSync(`temp-${game.name}.json`, JSON.stringify(actuall, null, "\t"));
             assert.equal(storage.Files.length, json.storage["expected-files"].length);
             assert.deepStrictEqual(actuall, json.storage["expected-files"]);
         });
 
-        test(`write-${game}-storage (${storage.constructor.name})`, args => {
-            console.log(`${args.name}...`);
+        test(`write-${game}-storage (${storage.constructor.name})`, () => {
             const buffer = Uint8Array.from(Array.from("test", c => c.charCodeAt(0)));
             storage.Files.push({
                 name: "test.txt",
