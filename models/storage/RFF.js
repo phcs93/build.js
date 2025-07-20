@@ -36,7 +36,7 @@ class RFF {
         // create byte reader
         const reader = new ByteReader(bytes);
 
-        // read RFF\x1A signature
+        // read RFF\x1a signature
         this.Signature = reader.string(4);
 
         // read version

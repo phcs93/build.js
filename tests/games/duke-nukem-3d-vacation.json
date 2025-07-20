@@ -21,6 +21,9 @@
 		]
 	},
 	"map": {
-		"path": "E1M1.MAP"
+		"path": "VACADM1.MAP",
+		"expected-sectors": 67,
+		"expected-walls": 465,
+		"expected-sprites": 28
 	}
 }

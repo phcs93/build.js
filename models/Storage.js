@@ -14,17 +14,19 @@ class Storage {
         }
         
         // pk3
-        if (bytes[0] === 0x50 && bytes[1] === 0x4B && bytes[2] === 0x03 && bytes[3] === 0x04) {
+        if (String.fromCharCode(...bytes.slice(0, 4)) === "PK\x03\x04") {
             return new PK3(bytes);
         }
 
         // rff
-        if (String.fromCharCode(...bytes.slice(0, 3)) === "RFF") {
+        if (String.fromCharCode(...bytes.slice(0, 4)) === "RFF\x1a") {
             return new RFF(bytes);
         }
 
         // ssi
-        return new SSI(bytes);
+        if (((bytes[0] << 0) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) === 2) {
+            return new SSI(bytes);
+        }
         
     }
 

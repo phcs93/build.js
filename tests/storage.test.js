@@ -19,13 +19,13 @@ suite("storage", () => {
             assert.deepStrictEqual(actuall, json.storage["expected-files"]);
         });
 
-        test(`write-${game}-storage (${storage.constructor.name})`, () => {
+        test(`write-${game}-storage (${storage.constructor.name})`, async () => {
             const buffer = Uint8Array.from(Array.from("test", c => c.charCodeAt(0)));
             storage.Files.push({
                 name: "test.txt",
                 bytes: buffer
             });
-            const serialized = storage.Serialize();
+            const serialized = await storage.Serialize();
             const unserialized = new Storage(serialized);
             assert.equal(unserialized.Files[unserialized.Files.length-1].name, "test.txt");
             assert.equal(unserialized.Files[unserialized.Files.length-1].size, buffer.length);

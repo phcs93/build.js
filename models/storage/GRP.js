@@ -3,6 +3,7 @@ const { headerSize, fileHeaderSize } = require("./RFF.js");
 ByteReader = (() => { try { return require("../../scripts/ByteReader.js"); } catch {} } )() ?? ByteReader;
 ByteWriter = (() => { try { return require("../../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
 
+// reference: https://moddingwiki.shikadi.net/wiki/GRP_Format
 class GRP {
 
     // sizes
