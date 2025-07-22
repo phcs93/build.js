@@ -687,5 +687,9 @@
 		"expected-sectors": 155,
 		"expected-walls": 1498,
 		"expected-sprites": 559
+	},
+	"art": {
+		"path": "C:/Games/Build Engine Games/Blood/ports/notblood/TILES000.ART",
+		"expected-tiles": 256
 	}
 }

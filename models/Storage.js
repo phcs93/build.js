@@ -8,7 +8,7 @@ class Storage {
 
     constructor (bytes) {
 
-        // grp
+        // grp / prg
         if (String.fromCharCode(...bytes.slice(0, 12)) === "KenSilverman") {
             return new GRP(bytes);
         }

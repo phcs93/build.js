@@ -94,7 +94,7 @@ class RFF {
     }
 
     // serialize function
-    Serialize = () => {
+    Serialize () {
 
         // file content size offsets (initialize pointing to after the rff header)
         let offset = RFF.headerSize;

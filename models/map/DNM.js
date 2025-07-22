@@ -105,7 +105,7 @@ class DNM {
 
     }
 
-    Serialize = () => {
+    Serialize () {
 
         const writer = new ByteWriter(20 + 2 + this.Sectors.length * DNM.SectorSize + 2 + this.Walls.length * DNM.WallSize + 2 + this.Sprites.length * DNM.SpriteSize);
 

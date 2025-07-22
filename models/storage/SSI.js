@@ -52,10 +52,10 @@ class SSI {
     }
 
     // serialize function
-    Serialize = () => {
+    Serialize () {
 
         // create byte writer
-        const writer = new ByteWriter(4 + 4 + 1 + 32 + 1 + 12 + 1 + 70 +1 + 70 + 1 + 70 + this.Files.length * (1+12+4+34+1+69) + this.Files.reduce((sum, f) => sum + f.bytes.length, 0));
+        const writer = new ByteWriter(4 + 4 + 1 + 32 + (this.Version === 2 ? 1 + 12 : 0) + 1 + 70 +1 + 70 + 1 + 70 + this.Files.length * (1+12+4+34+1+69) + this.Files.reduce((sum, f) => sum + f.bytes.length, 0));
 
         // write version
         writer.int32(this.Version);

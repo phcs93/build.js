@@ -284,7 +284,7 @@ class BLM {
 
     }
 
-    Serialize = () => {
+    Serialize () {
 
         // create byte writer
         const writer = new ByteWriter(

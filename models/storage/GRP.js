@@ -1,5 +1,3 @@
-const { headerSize, fileHeaderSize } = require("./RFF.js");
-
 ByteReader = (() => { try { return require("../../scripts/ByteReader.js"); } catch {} } )() ?? ByteReader;
 ByteWriter = (() => { try { return require("../../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
 
@@ -37,10 +35,10 @@ class GRP {
 
     }
 
-    Serialize = () => {
+    Serialize () {
 
         // create byte writer
-        const writer = new ByteWriter(headerSize + this.Files.length * fileHeaderSize + this.Files.reduce((sum, f) => sum + f.bytes.length, 0));
+        const writer = new ByteWriter(GRP.headerSize + this.Files.length * GRP.fileHeaderSize + this.Files.reduce((sum, f) => sum + f.bytes.length, 0));
 
         // write ken silverman string
         writer.string(this.Signature, 12);

@@ -25,5 +25,10 @@
 		"expected-sectors": 67,
 		"expected-walls": 465,
 		"expected-sprites": 28
+	},
+	"art": {
+		"sub-storage": "VACATION.PRG",
+		"path": "TILES000.ART",
+		"expected-tiles": 256
 	}
 }

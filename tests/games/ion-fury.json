@@ -1678,5 +1678,9 @@
 		"expected-sectors": 2878,
 		"expected-walls": 16369,
 		"expected-sprites": 5979
+	},
+	"art": {
+		"path": "tiles000.art",
+		"expected-tiles": 14280
 	}
 }
