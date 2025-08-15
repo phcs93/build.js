@@ -469,5 +469,9 @@
 	"art": {
 		"path": "TILES000.ART",
 		"expected-tiles": 256
+	},
+	"demo": {
+		"path": "DEMO1.DMO",
+		"expected-tics": 2706
 	}
 }
