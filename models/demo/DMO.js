@@ -1,5 +1,6 @@
 ByteReader = (() => { try { return require("../scripts/ByteReader.js"); } catch {} } )() ?? ByteReader;
 ByteWriter = (() => { try { return require("../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
+//ByteVersion = (() => { try { return require("../enums/ByteVersion.js"); } catch {} } )() ?? ByteVersion;
 
 // reference: https://web.archive.org/web/20150603141920/http://www.quakewiki.net/archives/demospecs/dmo/dmo.html
 class DMO {
@@ -8,10 +9,13 @@ class DMO {
 
         const reader = new ByteReader(bytes);
 
-        this.Tics = reader.uint32();
+        this.Inputs = new Array(reader.uint32());
         this.Version = reader.uint8();
-        this.Episode = reader.uint8();
-        this.Map = reader.uint8();
+        if (this.Version == 119/*ByteVersion.XDUKE_19_7*/) {
+            this.GRPVersion = reader.read(4*4);
+        }
+        this.Volume = reader.uint8();
+        this.Level = reader.uint8();
         this.Skill = reader.uint8();
         this.Mode = reader.uint8();
         this.FriendlyFire = reader.uint8();
@@ -22,10 +26,46 @@ class DMO {
         this.RespawnInventory = reader.uint32();
         this.BotAI = reader.uint32();
         this.Names = new Array(this.Players);
-
-        for (let i = 0; i < this.Names.length; i++) {
+        for (let i = 0; i < 16; i++) {
             this.Names[i] = reader.string(32);
         }        
+        this.Dummy = reader.int32();
+        this.Map = reader.string(128);
+        this.AimMode = new Array(this.Players);
+        this.WeaponChoice = new Array(this.Players);
+        for (let i = 0; i < this.Players; i++) {
+            this.AimMode[i] = reader.int8();
+            if (this.Version == 119/*ByteVersion.XDUKE_19_7*/) {
+                this.WeaponChoice[i] = new Array(12);
+                for (let w = 0; w < 12; w++) {
+                    this.WeaponChoice[i][w] = reader.uint32();
+                }
+            }
+        }
+
+        const RECSYNCBUFSIZ = 2520;
+
+        ;
+
+        let i = 0;
+
+        while (i < this.Inputs.length) {
+
+            const size = Math.min(this.Inputs.length - i, RECSYNCBUFSIZ);
+            const _reader = new ByteReader(reader.kdfread(10 * this.Players, size / this.Players));
+            
+            for (let _i = 0; _i < size; _i++) {
+                this.Inputs[i++] = {
+                    avel: _reader.int8(),
+                    horz: _reader.int8(),
+                    fvel: _reader.int16(),
+                    svel: _reader.int16(),
+                    bits: _reader.uint32()
+                };
+
+            }
+
+        }
 
     }
 

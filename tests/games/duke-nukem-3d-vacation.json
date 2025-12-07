@@ -1,6 +1,6 @@
 {
 	"storage": {
-		"path": "C:/Games/Build Engine Games/.stuff/files/DUKE3D_ADDONS_SSI_FILE_ORIGINAL_RELEASES/VACA15.SSI",
+		"path": "C:/Games/Build Engine Stuff/games/DUKE3D_ADDONS_SSI_FILE_ORIGINAL_RELEASES/VACA15.SSI",
 		"expected-files": [
 			{ "name": "CARIB.EXE", "size": 17632 },
 			{ "name": "VACADM1.MAP", "size": 18818 },

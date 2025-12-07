@@ -472,6 +472,6 @@
 	},
 	"demo": {
 		"path": "DEMO1.DMO",
-		"expected-tics": 2706
+		"expected-inputs": 2706
 	}
 }

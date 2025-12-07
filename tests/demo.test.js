@@ -17,7 +17,7 @@ suite("demo", () => {
 
         test(`read-${game}-demo`, () => {
             console.log(demo);
-            assert.equal(demo.Tics, json.demo["expected-tics"]);
+            assert.equal(demo.Inputs.length, json.demo["expected-inputs"]);
         });
 
         // test(`write-${game}-demo`, () => {
