@@ -38,14 +38,18 @@ class GRP {
     Serialize () {
 
         // create byte writer
-        const writer = new ByteWriter(GRP.headerSize + this.Files.length * GRP.fileHeaderSize + this.Files.reduce((sum, f) => sum + f.bytes.length, 0));
+        const writer = new ByteWriter(
+            GRP.headerSize + 
+            this.Files.length * GRP.fileHeaderSize + 
+            this.Files.reduce((sum, f) => sum + f.bytes.length, 0)
+        );
 
         // write ken silverman string
         writer.string(this.Signature, 12);
 
         // write number of files
         writer.int32(this.Files.length);
-
+        
         // write file names and sizes
         for (let i = 0; i < this.Files.length; i++) {
 

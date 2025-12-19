@@ -1,7 +1,7 @@
 ByteReader = (() => { try { return require("../scripts/ByteReader.js"); } catch {} } )() ?? ByteReader;
 ByteWriter = (() => { try { return require("../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
-LZW = (() => { try { return require("../../scripts/LZW.js"); } catch (e) {console.log(e);} } )() ?? LZW;
-//ByteVersion = (() => { try { return require("../enums/ByteVersion.js"); } catch {} } )() ?? ByteVersion;
+LZW = (() => { try { return require("../../scripts/LZW.js"); } catch {} } )() ?? LZW;
+ByteVersion = (() => { try { require("../../enums/ByteVersion.js"); return ByteVersion; } catch {} } )() ?? ByteVersion;
 
 // reference: https://web.archive.org/web/20150603141920/http://www.quakewiki.net/archives/demospecs/dmo/dmo.html
 class DMO {
@@ -15,7 +15,7 @@ class DMO {
 
         this.Inputs = new Array(reader.uint32());
         this.Version = reader.uint8();
-        if (this.Version == 119/*ByteVersion.XDUKE_19_7*/) {
+        if (this.Version == ByteVersion.XDUKE_19_7) {
             this.GRPVersion = reader.read(4*4);
         }
         this.Volume = reader.uint8();
@@ -39,7 +39,7 @@ class DMO {
         this.WeaponChoice = new Array(this.Players);
         for (let i = 0; i < this.Players; i++) {
             this.AimMode[i] = reader.int8();
-            if (this.Version == 119/*ByteVersion.XDUKE_19_7*/) {
+            if (this.Version == ByteVersion.XDUKE_19_7) {
                 this.WeaponChoice[i] = new Array(12);
                 for (let w = 0; w < 12; w++) {
                     this.WeaponChoice[i][w] = reader.uint32();
@@ -71,46 +71,35 @@ class DMO {
 
     Serialize () {
 
-        const players = this.Players | 0;
-        const hasWeaponChoice = (this.Version === 119);
-        const inputsLen = this.Inputs ? this.Inputs.length : 0;
-
         const headerSize =
             4 +                     // Inputs count (uint32)
             1 +                     // Version
-            (hasWeaponChoice ? 16 : 0) + // GRPVersion bruto
+            (this.Version === ByteVersion.XDUKE_19_7 ? 16 : 0) + // GRPVersion bruto
             1 + 1 + 1 + 1 + 1 +     // Volume, Level, Skill, Mode, FriendlyFire
             2 + 2 +                 // Players, Monsters
             4 + 4 + 4 + 4 +         // RespawnMonsters, RespawnItems, RespawnInventory, BotAI
             16 * 32 +               // Names[16] (cada 32 bytes)
             4 +                     // Dummy
             128 +                   // Map (128 bytes)
-            players +               // AimMode[Players] (int8)
-            (hasWeaponChoice ? players * 12 * 4 : 0); // WeaponChoice
+            this.Players +               // AimMode[Players] (int8)
+            (this.Version === ByteVersion.XDUKE_19_7 ? this.Players * 12 * 4 : 0); // WeaponChoice
 
-        // Estimativa segura pro tamanho dos dados comprimidos dos inputs
-        const inputsUncompressedSize = inputsLen * 10; // cada input = 10 bytes
-
-        let estimatedCompressedSize = 0;
-        if (inputsUncompressedSize > 0) {
-            // dfwrite divide em chunks de até LZWSIZE bytes,
-            // e o LZW pode adicionar até ~4096 bytes de overhead por chunk.
-            const chunks = Math.ceil(inputsUncompressedSize / LZW.size);
-            estimatedCompressedSize = inputsUncompressedSize + chunks * (4096 + 2); // +2 por uint16 de tamanho
-        }
-
-        const writer = new ByteWriter(headerSize + estimatedCompressedSize);
+        const writer = new ByteWriter(
+            headerSize + 
+            (this.Inputs.length * DMO.InputSize) +
+            (Math.ceil((this.Inputs.length * DMO.InputSize) / LZW.size) *  (4096 + 2))
+        );
 
         // ----- Cabeçalho -----
 
         // número de inputs
-        writer.int32(inputsLen);
+        writer.int32(this.Inputs.length);
 
         // versão
         writer.int8(this.Version | 0);
 
         // GRPVersion (bruto) só se Version == 119 (XDUKE_19_7)
-        if (hasWeaponChoice) {
+        if (this.Version === ByteVersion.XDUKE_19_7) {
             let grp = this.GRPVersion;
             if (!(grp instanceof Uint8Array)) {
                 grp = grp ? Uint8Array.from(grp) : new Uint8Array(16);
@@ -149,14 +138,14 @@ class DMO {
         writer.string(this.Map || "", 128);
 
         // AimMode[Players]
-        for (let i = 0; i < players; i++) {
+        for (let i = 0; i < this.Players; i++) {
             const v = (this.AimMode && this.AimMode[i] != null) ? this.AimMode[i] : 0;
             writer.int8(v | 0);
         }
 
         // WeaponChoice[Players][12] se Version == 119
-        if (hasWeaponChoice) {
-            for (let i = 0; i < players; i++) {
+        if (this.Version === ByteVersion.XDUKE_19_7) {
+            for (let i = 0; i < this.Players; i++) {
                 const wcRow = (this.WeaponChoice && this.WeaponChoice[i]) || [];
                 for (let w = 0; w < 12; w++) {
                     const val = wcRow[w] != null ? wcRow[w] : 0;
@@ -167,13 +156,13 @@ class DMO {
 
         // ----- Inputs comprimidos (dfwrite inverso do kdfread) -----
 
-        if (inputsLen > 0 && players > 0) {
+        if (this.Inputs.length > 0 && this.Players > 0) {
 
             let i = 0;
 
-            while (i < inputsLen) {
+            while (i < this.Inputs.length) {
 
-                const size = Math.min(inputsLen - i, DMO.RECSYNCBUFSIZ);
+                const size = Math.min(this.Inputs.length - i, DMO.RECSYNCBUFSIZ);
 
                 // buffer descomprimido para este bloco: size * 10 bytes
                 const buf = new Uint8Array(size * 10);
@@ -210,7 +199,7 @@ class DMO {
 
                 // Mesmos parâmetros do kdfread no constructor:
                 //   kdfread(10 * this.Players, size / this.Players)
-                writer.dfwrite(buf, 10 * players, size / players);
+                writer.dfwrite(buf, 10 * this.Players, size / this.Players);
 
                 i += size;
             }

@@ -109,7 +109,11 @@ class RFF {
         }
 
         // create byte writer
-        const writer = new ByteWriter(RFF.headerSize + this.Files.reduce((sum, f) => sum += f.size , 0) + this.Files.length * RFF.fileHeaderSize);
+        const writer = new ByteWriter(
+            RFF.headerSize + 
+            this.Files.reduce((sum, f) => sum += f.size , 0) + 
+            this.Files.length * RFF.fileHeaderSize
+        );
 
         // write RFF\x1A signature
         writer.string(this.Signature, 4);

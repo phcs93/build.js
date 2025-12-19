@@ -16,15 +16,12 @@ suite("demo", () => {
         const demo = new Demo(bytes);
 
         test(`read-${game}-demo`, () => {
-            console.log(bytes.length);
-            console.log(demo.FriendlyFire);
             assert.equal(demo.Inputs.length, json.demo["expected-inputs"]);
         });
 
         test(`write-${game}-demo`, () => {
             demo.FriendlyFire = 0;
             const serialized = demo.Serialize();
-            console.log(serialized.length);
             const unserialized = new Demo(serialized);
             assert.equal(unserialized.FriendlyFire, demo.FriendlyFire);
         });

@@ -5,6 +5,7 @@ class ByteWriter {
         this.index = 0;
     }
 
+    // using .set is incredibly fast and necessary otherwise we would get a stack overflow
     write(bytes) { this.bytes.set(bytes, this.index); this.index += bytes.length; }
     int8(v) { this.write([v & 0xFF]); }
     int16(v) { this.write([v & 0xFF, (v >> 8) & 0xFF]); }
