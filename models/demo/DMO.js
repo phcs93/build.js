@@ -1,9 +1,13 @@
 ByteReader = (() => { try { return require("../scripts/ByteReader.js"); } catch {} } )() ?? ByteReader;
 ByteWriter = (() => { try { return require("../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
+LZW = (() => { try { return require("../../scripts/LZW.js"); } catch (e) {console.log(e);} } )() ?? LZW;
 //ByteVersion = (() => { try { return require("../enums/ByteVersion.js"); } catch {} } )() ?? ByteVersion;
 
 // reference: https://web.archive.org/web/20150603141920/http://www.quakewiki.net/archives/demospecs/dmo/dmo.html
 class DMO {
+
+    static RECSYNCBUFSIZ = 2520;
+    static InputSize = 10;
 
     constructor(bytes) {
 
@@ -43,16 +47,12 @@ class DMO {
             }
         }
 
-        const RECSYNCBUFSIZ = 2520;
-
-        ;
-
         let i = 0;
 
         while (i < this.Inputs.length) {
 
-            const size = Math.min(this.Inputs.length - i, RECSYNCBUFSIZ);
-            const _reader = new ByteReader(reader.kdfread(10 * this.Players, size / this.Players));
+            const size = Math.min(this.Inputs.length - i, DMO.RECSYNCBUFSIZ);
+            const _reader = new ByteReader(reader.kdfread(DMO.InputSize * this.Players, size / this.Players));
             
             for (let _i = 0; _i < size; _i++) {
                 this.Inputs[i++] = {
@@ -71,94 +71,153 @@ class DMO {
 
     Serialize () {
 
-        const writer = new ByteWriter(20 + 2 + this.Sectors.length * DNM.SectorSize + 2 + this.Walls.length * DNM.WallSize + 2 + this.Sprites.length * DNM.SpriteSize);
+        const players = this.Players | 0;
+        const hasWeaponChoice = (this.Version === 119);
+        const inputsLen = this.Inputs ? this.Inputs.length : 0;
 
-        writer.int32(this.Version);
-        writer.int32(this.X);
-        writer.int32(this.Y);
-        writer.int32(this.Z);
-        writer.int16(this.A);
-        writer.int16(this.S);
+        const headerSize =
+            4 +                     // Inputs count (uint32)
+            1 +                     // Version
+            (hasWeaponChoice ? 16 : 0) + // GRPVersion bruto
+            1 + 1 + 1 + 1 + 1 +     // Volume, Level, Skill, Mode, FriendlyFire
+            2 + 2 +                 // Players, Monsters
+            4 + 4 + 4 + 4 +         // RespawnMonsters, RespawnItems, RespawnInventory, BotAI
+            16 * 32 +               // Names[16] (cada 32 bytes)
+            4 +                     // Dummy
+            128 +                   // Map (128 bytes)
+            players +               // AimMode[Players] (int8)
+            (hasWeaponChoice ? players * 12 * 4 : 0); // WeaponChoice
 
-        writer.int16(this.Sectors.length);
+        // Estimativa segura pro tamanho dos dados comprimidos dos inputs
+        const inputsUncompressedSize = inputsLen * 10; // cada input = 10 bytes
 
-        for (let i = 0; i < this.Sectors.length; i++) {
-            writer.int16(this.Sectors[i].wallptr);
-            writer.int16(this.Sectors[i].wallnum);
-            writer.int32(this.Sectors[i].ceilingz);
-            writer.int32(this.Sectors[i].floorz);
-            writer.int16(this.Sectors[i].ceilingstat);
-            writer.int16(this.Sectors[i].floorstat);
-            writer.int16(this.Sectors[i].ceilingpicnum);
-            writer.int16(this.Sectors[i].ceilingheinum);
-            writer.int8(this.Sectors[i].ceilingshade);
-            writer.int8(this.Sectors[i].ceilingpal);
-            writer.int8(this.Sectors[i].ceilingxpanning);
-            writer.int8(this.Sectors[i].ceilingypanning);
-            writer.int16(this.Sectors[i].floorpicnum);
-            writer.int16(this.Sectors[i].floorheinum);
-            writer.int8(this.Sectors[i].floorshade);
-            writer.int8(this.Sectors[i].floorpal);
-            writer.int8(this.Sectors[i].floorxpanning);
-            writer.int8(this.Sectors[i].floorypanning);
-            writer.int8(this.Sectors[i].visibility);
-            writer.int8(this.Sectors[i].filler);
-            writer.int16(this.Sectors[i].lotag);
-            writer.int16(this.Sectors[i].hitag);
-            writer.int16(this.Sectors[i].extra);
+        let estimatedCompressedSize = 0;
+        if (inputsUncompressedSize > 0) {
+            // dfwrite divide em chunks de até LZWSIZE bytes,
+            // e o LZW pode adicionar até ~4096 bytes de overhead por chunk.
+            const chunks = Math.ceil(inputsUncompressedSize / LZW.size);
+            estimatedCompressedSize = inputsUncompressedSize + chunks * (4096 + 2); // +2 por uint16 de tamanho
         }
 
-        writer.int16(this.Walls.length);
+        const writer = new ByteWriter(headerSize + estimatedCompressedSize);
 
-        for (let i = 0; i < this.Walls.length; i++) {
-            writer.int32(this.Walls[i].x);
-            writer.int32(this.Walls[i].y);
-            writer.int16(this.Walls[i].point2);
-            writer.int16(this.Walls[i].nextwall);
-            writer.int16(this.Walls[i].nextsector);
-            writer.int16(this.Walls[i].cstat);
-            writer.int16(this.Walls[i].picnum);
-            writer.int16(this.Walls[i].overpicnum);
-            writer.int8(this.Walls[i].shade);
-            writer.int8(this.Walls[i].pal);
-            writer.int8(this.Walls[i].xrepeat);
-            writer.int8(this.Walls[i].yrepeat);
-            writer.int8(this.Walls[i].xpanning);
-            writer.int8(this.Walls[i].ypanning);
-            writer.int16(this.Walls[i].lotag);
-            writer.int16(this.Walls[i].hitag);
-            writer.int16(this.Walls[i].extra);
+        // ----- Cabeçalho -----
+
+        // número de inputs
+        writer.int32(inputsLen);
+
+        // versão
+        writer.int8(this.Version | 0);
+
+        // GRPVersion (bruto) só se Version == 119 (XDUKE_19_7)
+        if (hasWeaponChoice) {
+            let grp = this.GRPVersion;
+            if (!(grp instanceof Uint8Array)) {
+                grp = grp ? Uint8Array.from(grp) : new Uint8Array(16);
+            }
+            if (grp.length !== 16) {
+                grp = grp.slice(0, 16);
+            }
+            writer.write(grp);
         }
 
-        writer.int16(this.Sprites.length);
+        // campos simples
+        writer.int8(this.Volume | 0);
+        writer.int8(this.Level | 0);
+        writer.int8(this.Skill | 0);
+        writer.int8(this.Mode | 0);
+        writer.int8(this.FriendlyFire | 0);
 
-        for (let i = 0; i < this.Sprites.length; i++) {
-            writer.int32(this.Sprites[i].x);
-            writer.int32(this.Sprites[i].y);
-            writer.int32(this.Sprites[i].z);
-            writer.int16(this.Sprites[i].cstat);
-            writer.int16(this.Sprites[i].picnum);
-            writer.int8(this.Sprites[i].shade);
-            writer.int8(this.Sprites[i].pal);
-            writer.int8(this.Sprites[i].clipdist);
-            writer.int8(this.Sprites[i].filler);
-            writer.int8(this.Sprites[i].xrepeat);
-            writer.int8(this.Sprites[i].yrepeat);
-            writer.int8(this.Sprites[i].xoffset);
-            writer.int8(this.Sprites[i].yoffset);
-            writer.int16(this.Sprites[i].sectnum);
-            writer.int16(this.Sprites[i].statnum);
-            writer.int16(this.Sprites[i].ang);
-            writer.int16(this.Sprites[i].owner);
-            writer.int16(this.Sprites[i].xvel);
-            writer.int16(this.Sprites[i].yvel);
-            writer.int16(this.Sprites[i].zvel);
-            writer.int16(this.Sprites[i].lotag);
-            writer.int16(this.Sprites[i].hitag);
-            writer.int16(this.Sprites[i].extra);
+        writer.int16(this.Players & 0xFFFF);
+        writer.int16(this.Monsters & 0xFFFF);
+
+        writer.int32(this.RespawnMonsters >>> 0);
+        writer.int32(this.RespawnItems >>> 0);
+        writer.int32(this.RespawnInventory >>> 0);
+        writer.int32(this.BotAI >>> 0);
+
+        // 16 nomes de 32 bytes cada (sempre 16, igual ao constructor)
+        for (let i = 0; i < 16; i++) {
+            const name = (this.Names && this.Names[i]) ? this.Names[i] : "";
+            writer.string(name, 32);
         }
 
-        return writer.bytes;
+        // Dummy
+        writer.int32((this.Dummy | 0));
+
+        // Map (128 bytes, padded com '\0')
+        writer.string(this.Map || "", 128);
+
+        // AimMode[Players]
+        for (let i = 0; i < players; i++) {
+            const v = (this.AimMode && this.AimMode[i] != null) ? this.AimMode[i] : 0;
+            writer.int8(v | 0);
+        }
+
+        // WeaponChoice[Players][12] se Version == 119
+        if (hasWeaponChoice) {
+            for (let i = 0; i < players; i++) {
+                const wcRow = (this.WeaponChoice && this.WeaponChoice[i]) || [];
+                for (let w = 0; w < 12; w++) {
+                    const val = wcRow[w] != null ? wcRow[w] : 0;
+                    writer.int32(val >>> 0);
+                }
+            }
+        }
+
+        // ----- Inputs comprimidos (dfwrite inverso do kdfread) -----
+
+        if (inputsLen > 0 && players > 0) {
+
+            let i = 0;
+
+            while (i < inputsLen) {
+
+                const size = Math.min(inputsLen - i, DMO.RECSYNCBUFSIZ);
+
+                // buffer descomprimido para este bloco: size * 10 bytes
+                const buf = new Uint8Array(size * 10);
+                let off = 0;
+
+                for (let _i = 0; _i < size; _i++) {
+                    const input = this.Inputs[i + _i] || {};
+
+                    const avel = (input.avel | 0);
+                    const horz = (input.horz | 0);
+                    const fvel = (input.fvel | 0);
+                    const svel = (input.svel | 0);
+                    const bits = (input.bits >>> 0);
+
+                    // int8 avel
+                    buf[off++] = avel & 0xFF;
+                    // int8 horz
+                    buf[off++] = horz & 0xFF;
+
+                    // int16 fvel (little-endian)
+                    buf[off++] = fvel & 0xFF;
+                    buf[off++] = (fvel >> 8) & 0xFF;
+
+                    // int16 svel (little-endian)
+                    buf[off++] = svel & 0xFF;
+                    buf[off++] = (svel >> 8) & 0xFF;
+
+                    // uint32 bits (little-endian)
+                    buf[off++] = bits & 0xFF;
+                    buf[off++] = (bits >> 8) & 0xFF;
+                    buf[off++] = (bits >> 16) & 0xFF;
+                    buf[off++] = (bits >> 24) & 0xFF;
+                }
+
+                // Mesmos parâmetros do kdfread no constructor:
+                //   kdfread(10 * this.Players, size / this.Players)
+                writer.dfwrite(buf, 10 * players, size / players);
+
+                i += size;
+            }
+        }
+
+        // Retorna apenas a parte usada do buffer
+        return writer.bytes.subarray(0, writer.index);
 
     }
 

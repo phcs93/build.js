@@ -16,16 +16,18 @@ suite("demo", () => {
         const demo = new Demo(bytes);
 
         test(`read-${game}-demo`, () => {
-            console.log(demo);
+            console.log(bytes.length);
+            console.log(demo.FriendlyFire);
             assert.equal(demo.Inputs.length, json.demo["expected-inputs"]);
         });
 
-        // test(`write-${game}-demo`, () => {
-        //     map.Sprites.push(Object.assign({}, map.Sprites[map.Sprites.length-1]));
-        //     const serialized = map.Serialize();
-        //     const unserialized = new Map(serialized);
-        //     assert.equal(unserialized.Sprites.length, map.Sprites.length);
-        // });
+        test(`write-${game}-demo`, () => {
+            demo.FriendlyFire = 0;
+            const serialized = demo.Serialize();
+            console.log(serialized.length);
+            const unserialized = new Demo(serialized);
+            assert.equal(unserialized.FriendlyFire, demo.FriendlyFire);
+        });
 
     }    
 
