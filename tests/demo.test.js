@@ -26,6 +26,6 @@ suite("demo", () => {
             assert.equal(unserialized.FriendlyFire, demo.FriendlyFire);
         });
 
-    }    
+    }
 
 });

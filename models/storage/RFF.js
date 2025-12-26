@@ -5,8 +5,8 @@ ByteWriter = (() => { try { return require("../../scripts/ByteWriter.js"); } cat
 class RFF {
 
     // sizes
-    static headerSize = 32;
-    static fileHeaderSize = 48;
+    static HeaderSize = 32;
+    static FileHeaderSize = 48;
 
     // reference: https://github.com/camoto-project/gamecompjs/blob/master/formats/enc-xor-blood.js
     static decrypt = (bytes, options) => {
@@ -58,7 +58,7 @@ class RFF {
         this.Padding2 = reader.read(16);
 
         // decrypt chunk of file headers bytes (these are located AFTER the file contents)
-        const fileHeadersBytes = RFF.decrypt(reader.bytes.slice(this.Offset, this.Offset + this.Files.length * RFF.fileHeaderSize), {
+        const fileHeadersBytes = RFF.decrypt(reader.bytes.slice(this.Offset, this.Offset + this.Files.length * RFF.FileHeaderSize), {
             seed: this.Offset & 0xFF,
             offset: 0,
             limit: 0
@@ -97,7 +97,7 @@ class RFF {
     Serialize () {
 
         // file content size offsets (initialize pointing to after the rff header)
-        let offset = RFF.headerSize;
+        let offset = RFF.HeaderSize;
 
         // encrypt file contents before performing any calculations
         for (let i = 0; i < this.Files.length; i++) {
@@ -110,9 +110,9 @@ class RFF {
 
         // create byte writer
         const writer = new ByteWriter(
-            RFF.headerSize + 
+            RFF.HeaderSize + 
             this.Files.reduce((sum, f) => sum += f.size , 0) + 
-            this.Files.length * RFF.fileHeaderSize
+            this.Files.length * RFF.FileHeaderSize
         );
 
         // write RFF\x1A signature
@@ -128,7 +128,7 @@ class RFF {
         writer.write(this.Padding1);
 
         // write fat offset (file headers offset)
-        writer.int32(RFF.headerSize + this.Files.reduce((sum, f) => sum += f.size , 0));
+        writer.int32(RFF.HeaderSize + this.Files.reduce((sum, f) => sum += f.size , 0));
 
         // write number of files
         writer.int32(this.Files.length);
@@ -147,7 +147,7 @@ class RFF {
         }
 
         // create file header writer
-        const fileHeaderWriter = new ByteWriter(this.Files.length * RFF.fileHeaderSize);
+        const fileHeaderWriter = new ByteWriter(this.Files.length * RFF.FileHeaderSize);
 
         // write files headers
         for (let i = 0; i < this.Files.length; i++) {

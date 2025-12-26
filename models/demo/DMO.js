@@ -15,7 +15,7 @@ class DMO {
 
         this.Inputs = new Array(reader.uint32());
         this.Version = reader.uint8();
-        if (this.Version == ByteVersion.XDUKE_19_7) {
+        if (ByteVersion.XDUKE_19_7_OR_HDUKE(this.Version)) {
             this.GRPVersion = reader.read(4*4);
         }
         this.Volume = reader.uint8();
@@ -39,7 +39,7 @@ class DMO {
         this.WeaponChoice = new Array(this.Players);
         for (let i = 0; i < this.Players; i++) {
             this.AimMode[i] = reader.int8();
-            if (this.Version == ByteVersion.XDUKE_19_7) {
+            if (ByteVersion.XDUKE_19_7_OR_HDUKE(this.Version)) {
                 this.WeaponChoice[i] = new Array(12);
                 for (let w = 0; w < 12; w++) {
                     this.WeaponChoice[i][w] = reader.uint32();
@@ -74,7 +74,7 @@ class DMO {
         const headerSize =
             4 +                     // Inputs count (uint32)
             1 +                     // Version
-            (this.Version === ByteVersion.XDUKE_19_7 ? 16 : 0) + // GRPVersion bruto
+            (ByteVersion.XDUKE_19_7_OR_HDUKE(this.Version) ? 16 : 0) + // GRPVersion bruto
             1 + 1 + 1 + 1 + 1 +     // Volume, Level, Skill, Mode, FriendlyFire
             2 + 2 +                 // Players, Monsters
             4 + 4 + 4 + 4 +         // RespawnMonsters, RespawnItems, RespawnInventory, BotAI
@@ -82,7 +82,7 @@ class DMO {
             4 +                     // Dummy
             128 +                   // Map (128 bytes)
             this.Players +               // AimMode[Players] (int8)
-            (this.Version === ByteVersion.XDUKE_19_7 ? this.Players * 12 * 4 : 0); // WeaponChoice
+            (ByteVersion.XDUKE_19_7_OR_HDUKE(this.Version) ? this.Players * 12 * 4 : 0); // WeaponChoice
 
         const writer = new ByteWriter(
             headerSize + 
@@ -99,7 +99,7 @@ class DMO {
         writer.int8(this.Version | 0);
 
         // GRPVersion (bruto) só se Version == 119 (XDUKE_19_7)
-        if (this.Version === ByteVersion.XDUKE_19_7) {
+        if (ByteVersion.XDUKE_19_7_OR_HDUKE(this.Version)) {
             let grp = this.GRPVersion;
             if (!(grp instanceof Uint8Array)) {
                 grp = grp ? Uint8Array.from(grp) : new Uint8Array(16);
@@ -144,7 +144,7 @@ class DMO {
         }
 
         // WeaponChoice[Players][12] se Version == 119
-        if (this.Version === ByteVersion.XDUKE_19_7) {
+        if (ByteVersion.XDUKE_19_7_OR_HDUKE(this.Version)) {
             for (let i = 0; i < this.Players; i++) {
                 const wcRow = (this.WeaponChoice && this.WeaponChoice[i]) || [];
                 for (let w = 0; w < 12; w++) {

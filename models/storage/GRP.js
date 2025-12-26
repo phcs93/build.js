@@ -5,8 +5,8 @@ ByteWriter = (() => { try { return require("../../scripts/ByteWriter.js"); } cat
 class GRP {
 
     // sizes
-    static headerSize = 16;
-    static fileHeaderSize = 16;
+    static HeaderSize = 16;
+    static FileHeaderSize = 16;
 
     constructor (bytes) {
 
@@ -39,8 +39,8 @@ class GRP {
 
         // create byte writer
         const writer = new ByteWriter(
-            GRP.headerSize + 
-            this.Files.length * GRP.fileHeaderSize + 
+            GRP.HeaderSize + 
+            this.Files.length * GRP.FileHeaderSize + 
             this.Files.reduce((sum, f) => sum + f.bytes.length, 0)
         );
 

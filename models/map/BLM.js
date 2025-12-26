@@ -4,11 +4,11 @@ ByteWriter = (() => { try { return require("../scripts/ByteWriter.js"); } catch 
 // reference: https://github.com/clipmove/NotBlood/blob/master/source/blood/src/db.cpp
 class BLM {
 
-    static newKey = 0x7474614D; // 'ttaM' signature
-    static oldKey = 0x4D617474; // 'Matt' signature
+    static NewKey = 0x7474614D; // 'ttaM' signature
+    static OldKey = 0x4D617474; // 'Matt' signature
 
-    static headerSize = 37;
-    static extraHeaderSize = 128;
+    static HeaderSize = 37;
+    static ExtraHeaderSize = 128;
 
     static SectorSize = 40;
     static WallSize = 32;
@@ -52,16 +52,16 @@ class BLM {
         this.byte1A76C6 = false;
 
         // read header bytes
-        let headerBytes = reader.read(BLM.headerSize);
+        let headerBytes = reader.read(BLM.HeaderSize);
 
         // get int32 key (where the "song id" would be)
         this.at16 = (headerBytes[23] << 0) | (headerBytes[24] << 8) | (headerBytes[25] << 16) | (headerBytes[26] << 24);
 
         // check if decryption is needed
-        if (this.at16 !== 0 && this.at16 !== BLM.newKey && this.at16 !== BLM.oldKey) {
+        if (this.at16 !== 0 && this.at16 !== BLM.NewKey && this.at16 !== BLM.OldKey) {
 
             // decrypt header bytes
-            headerBytes = BLM.decrypt(headerBytes, BLM.newKey);
+            headerBytes = BLM.decrypt(headerBytes, BLM.NewKey);
 
             // ecryption flag?
             this.byte1A76C7 = true;
@@ -90,7 +90,7 @@ class BLM {
 
         // another flag?
         if (this.byte1A76C8) {
-            if (this.at16 === BLM.newKey || this.at16 === BLM.oldKey) {                
+            if (this.at16 === BLM.NewKey || this.at16 === BLM.OldKey) {                
                 this.byte1A76C6 = true;
             } else if (!this.at16) {
                 this.byte1A76C6 = false;
@@ -99,7 +99,7 @@ class BLM {
 
         // read extra flags header
         if (this.byte1A76C8) {
-            const extraReader = new ByteReader(BLM.decrypt(reader.read(BLM.extraHeaderSize), this.Walls.length));
+            const extraReader = new ByteReader(BLM.decrypt(reader.read(BLM.ExtraHeaderSize), this.Walls.length));
             this.XPadStart = extraReader.read(64);
             this.XSectorSize = extraReader.uint32();
             this.XWallSize = extraReader.uint32();
@@ -288,16 +288,17 @@ class BLM {
 
         // create byte writer
         const writer = new ByteWriter(
-            4+2+
-            BLM.headerSize+
-            BLM.extraHeaderSize+
-            this.SkyOffsets.length*2+
-            this.Sectors.length*BLM.SectorSize+
-            this.Sectors.filter(s => s.extra > 0).length*(this.byte1A76C8 ? this.XSectorSize : BLM.XSectorSize)+
-            this.Walls.length*BLM.WallSize+
-            this.Walls.filter(w => w.extra > 0).length*(this.byte1A76C8 ? this.XWallSize : BLM.XWallSize)+
-            this.Sprites.length*BLM.SpriteSize+
-            this.Sprites.filter(s => s.extra > 0).length*(this.byte1A76C8 ? this.XSpriteSize : BLM.XSpriteSize)
+            4 + // signature
+            2 + // version
+            BLM.HeaderSize +
+            BLM.ExtraHeaderSize +
+            this.SkyOffsets.length * 2 +
+            this.Sectors.length * BLM.SectorSize +
+            this.Sectors.filter(s => s.extra > 0).length * (this.byte1A76C8 ? this.XSectorSize : BLM.XSectorSize) +
+            this.Walls.length * BLM.WallSize +
+            this.Walls.filter(w => w.extra > 0).length * (this.byte1A76C8 ? this.XWallSize : BLM.XWallSize) +
+            this.Sprites.length * BLM.SpriteSize +
+            this.Sprites.filter(s => s.extra > 0).length * (this.byte1A76C8 ? this.XSpriteSize : BLM.XSpriteSize)
         );
 
         // write BLM\x1a signature
@@ -307,7 +308,7 @@ class BLM {
         writer.int16(this.Version);
 
         // create header writer
-        const headerWriter = new ByteWriter(BLM.headerSize);
+        const headerWriter = new ByteWriter(BLM.HeaderSize);
 
         // write map header bytes to local writer
         headerWriter.int32(this.X);
@@ -328,7 +329,7 @@ class BLM {
         if (this.byte1A76C7) {
 
             // encrypt header bytes
-            headerWriter.bytes = BLM.encrypt(headerWriter.bytes, BLM.newKey);
+            headerWriter.bytes = BLM.encrypt(headerWriter.bytes, BLM.NewKey);
 
         }
 
@@ -337,7 +338,7 @@ class BLM {
 
         // write extra flags header
         if (this.byte1A76C8) {
-            const extraWriter = new ByteWriter(BLM.extraHeaderSize);
+            const extraWriter = new ByteWriter(BLM.ExtraHeaderSize);
             extraWriter.write(this.XPadStart); // 64
             extraWriter.int32(this.XSectorSize);
             extraWriter.int32(this.XWallSize);

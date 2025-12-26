@@ -108,10 +108,15 @@ class DNM {
     Serialize () {
 
         const writer = new ByteWriter(
-            20 + 2 + 
-            this.Sectors.length * DNM.SectorSize + 2 + 
-            this.Walls.length * DNM.WallSize + 2 + 
-            this.Sprites.length * DNM.SpriteSize
+            4 + // version
+            4 + // x
+            4 + // y
+            4 + // z
+            2 + // a
+            2 + // s
+            2 + this.Sectors.length * DNM.SectorSize + // numsectors + sectors
+            2 + this.Walls.length * DNM.WallSize + // numwalls + walls
+            2 + this.Sprites.length * DNM.SpriteSize // numsprites + sprites
         );
 
         writer.int32(this.Version);

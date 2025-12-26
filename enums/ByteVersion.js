@@ -18,5 +18,19 @@ ByteVersion = {
     HDUKE                 : 252,
     HDUKE_TDM             : 253,
     HDUKE_FORTS           : 254,
-    PRODUKE               : 150
+    PRODUKE               : 150,
+    XDUKE_19_7_OR_HDUKE: (version) => {
+        return [
+            ByteVersion.XDUKE_19_7,
+            ByteVersion.HDUKE_1,
+            ByteVersion.HDUKE_2,
+            ByteVersion.HDUKE_3,
+            ByteVersion.HDUKE_4,
+            ByteVersion.HDUKE_5,
+            ByteVersion.HDUKE_6,
+            ByteVersion.HDUKE,
+            ByteVersion.HDUKE_TDM,
+            ByteVersion.HDUKE_FORTS
+        ].some(v => v == version);
+    }
 };
