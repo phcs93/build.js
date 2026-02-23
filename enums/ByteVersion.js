@@ -33,4 +33,4 @@ ByteVersion = {
             ByteVersion.HDUKE_FORTS
         ].some(v => v == version);
     }
-};
+}

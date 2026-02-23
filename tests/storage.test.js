@@ -14,7 +14,8 @@ suite("storage", () => {
 
         test(`read-${game}-storage (${storage.constructor.name})`, () => {
             const actuall = storage.Files.map(f => ({name: f.name, size: f.size}));
-            //fs.writeFileSync(`temp-${game.name}.json`, JSON.stringify(actuall, null, "\t"));
+            //console.log(actuall);
+            //fs.writeFileSync(`temp-${game}.json`, JSON.stringify(actuall, null, "\t"));
             assert.equal(storage.Files.length, json.storage["expected-files"].length);
             assert.deepStrictEqual(actuall, json.storage["expected-files"]);
         });
