@@ -1,4 +1,4 @@
-SectorCstat = {
+Build.Enums.SectorCstat = {
     Parallaxing: 0,
     Sloped: 1,
     SwapXY: 2,

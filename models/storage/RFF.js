@@ -1,8 +1,5 @@
-ByteReader = (() => { try { return require("../../scripts/ByteReader.js"); } catch {} } )() ?? ByteReader;
-ByteWriter = (() => { try { return require("../../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
-
 // reference: https://github.com/camoto-project/gamearchivejs/blob/master/formats/arc-rff-blood-common.js
-class RFF {
+Build.Models.Storage.RFF = class RFF {
 
     // sizes
     static HeaderSize = 32;
@@ -34,7 +31,7 @@ class RFF {
     constructor (bytes) {
 
         // create byte reader
-        const reader = new ByteReader(bytes);
+        const reader = new Build.Scripts.ByteReader(bytes);
 
         // read RFF\x1a signature
         this.Signature = reader.string(4);
@@ -65,7 +62,7 @@ class RFF {
         });
 
         // create file header reader
-        const fileHeaderReader = new ByteReader(fileHeadersBytes);
+        const fileHeaderReader = new Build.Scripts.ByteReader(fileHeadersBytes);
 
         // read files headers
         for (let i = 0; i < this.Files.length; i++) {
@@ -109,7 +106,7 @@ class RFF {
         }
 
         // create byte writer
-        const writer = new ByteWriter(
+        const writer = new Build.Scripts.ByteWriter(
             RFF.HeaderSize + 
             this.Files.reduce((sum, f) => sum += f.size , 0) + 
             this.Files.length * RFF.FileHeaderSize
@@ -147,7 +144,7 @@ class RFF {
         }
 
         // create file header writer
-        const fileHeaderWriter = new ByteWriter(this.Files.length * RFF.FileHeaderSize);
+        const fileHeaderWriter = new Build.Scripts.ByteWriter(this.Files.length * RFF.FileHeaderSize);
 
         // write files headers
         for (let i = 0; i < this.Files.length; i++) {
@@ -174,5 +171,3 @@ class RFF {
     }
 
 }
-
-try { module.exports = RFF; } catch {}

@@ -1,4 +1,4 @@
-WallCstat = {
+Build.Enums.WallCstat = {
     Blocking: 0, 
     BottomsOfInvisibleWallsSwapped: 1, 
     AlignPictureOnBottom: 2, 

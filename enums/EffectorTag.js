@@ -1,4 +1,4 @@
-EffectorTag = {
+Build.Enums.EffectorTag = {
     Pivot: 1,
     Earthquake: 2,
     RandomLightsAfterShotOut: 3,

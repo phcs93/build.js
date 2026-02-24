@@ -1,13 +1,10 @@
-ByteReader = (() => { try { return require("../../scripts/ByteReader.js"); } catch {} } )() ?? ByteReader;
-ByteWriter = (() => { try { return require("../../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
-
 // reference: http://dukertcm.com/knowledge-base/downloads-rtcm/general-tools/unpackssi.zip
-class SSI {
+Build.Models.Storage.SSI = class SSI {
 
     constructor (bytes) {
 
         // create byte reader
-        const reader = new ByteReader(bytes);
+        const reader = new Build.Scripts.ByteReader(bytes);
 
         // read file version (1 or 2)
         this.Version = reader.uint32();
@@ -55,7 +52,7 @@ class SSI {
     Serialize () {
 
         // create byte writer
-        const writer = new ByteWriter(4 + 4 + 1 + 32 + (this.Version === 2 ? 1 + 12 : 0) + 1 + 70 +1 + 70 + 1 + 70 + this.Files.length * (1+12+4+34+1+69) + this.Files.reduce((sum, f) => sum + f.bytes.length, 0));
+        const writer = new Build.Scripts.ByteWriter(4 + 4 + 1 + 32 + (this.Version === 2 ? 1 + 12 : 0) + 1 + 70 +1 + 70 + 1 + 70 + this.Files.length * (1+12+4+34+1+69) + this.Files.reduce((sum, f) => sum + f.bytes.length, 0));
 
         // write version
         writer.int32(this.Version);
@@ -100,5 +97,3 @@ class SSI {
     };
 
 }
-
-try { module.exports = SSI; } catch {}

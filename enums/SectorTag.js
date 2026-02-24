@@ -1,4 +1,4 @@
-SectorTag = {
+Build.Enums.SectorTag = {
     AboveWaterSector: 1,
     BelowWaterSector: 2,
     Boss2RoamSector: 3,

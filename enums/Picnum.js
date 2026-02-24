@@ -1,4 +1,4 @@
-Picnum = {
+Build.Enums.Picnum = {
     Effectors: {
         SectorEffector: 1,
         Activator: 2,
@@ -64,14 +64,14 @@ Picnum = {
     },
     get Items () {
         return [
-            Picnum.Spawn,
-            Picnum.Card,
-            ...Object.values(Picnum.Weapons),
-            ...Object.values(Picnum.Ammo),
-            ...Object.values(Picnum.Inventory),
-            ...Object.values(Picnum.Health),
-            Picnum.ProDuke.Flag,
-            Picnum.NDuke.Flag
+            Build.Enums.Picnum.Spawn,
+            Build.Enums.Picnum.Card,
+            ...Object.values(Build.Enums.Picnum.Weapons),
+            ...Object.values(Build.Enums.Picnum.Ammo),
+            ...Object.values(Build.Enums.Picnum.Inventory),
+            ...Object.values(Build.Enums.Picnum.Health),
+            Build.Enums.Picnum.ProDuke.Flag,
+            Build.Enums.Picnum.NDuke.Flag
         ];
     }
 }

@@ -1,6 +1,6 @@
 const { suite, test } = require("node:test");
 const fs = require("node:fs");
-const Storage = require("../models/Storage.js");
+const Build = require("../build.js");
 
 suite("storage", () => {
 
@@ -9,23 +9,14 @@ suite("storage", () => {
 
     const originalGRPPath = "C:\\GIT\\SergioLuisBerto\\produke\\bin\\DUKE3D.GRP";
 
-    test("generate produke.grp", async () => {
+    test("generate produke.grp", () => {
 
-        const produkeGRP = new Storage(fs.readFileSync(originalGRPPath));
+        const produkeGRP = new Build.Models.Storage.GRP();
 
-        // replace original files with produke files
-        produkeGRP.Files = [
-            {
-                name: "LOOKUP.DAT",
-                bytes: lookupBytes
-            },
-            {
-                name: "TILES023.ART",
-                bytes: tiles23Bytes
-            }
-        ];
+        produkeGRP.AddFile("LOOKUP.DAT", lookupBytes);
+        produkeGRP.AddFile("TILES023.ART", tiles23Bytes);
 
-        const produkeGRPBytes = await produkeGRP.Serialize();
+        const produkeGRPBytes = Build.Models.Storage.GRP.Serialize(produkeGRP);
 
         fs.writeFileSync("C:\\GIT\\SergioLuisBerto\\produke\\produke.grp", produkeGRPBytes);
         

@@ -1,4 +1,4 @@
-class ByteReader {
+Build.Scripts.ByteReader = class ByteReader {
 
     constructor(bytes) {
         this.bytes = new Uint8Array(bytes);
@@ -64,5 +64,3 @@ class ByteReader {
     }
 
 }
-
-try { module.exports = ByteReader; } catch {}

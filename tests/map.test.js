@@ -1,8 +1,7 @@
 const { suite, test } = require("node:test");
 const assert = require("node:assert");
 const fs = require("node:fs");
-const Storage = require("../models/Storage.js");
-const Map = require("../models/Map.js");
+const Build = require("../build.js");
 
 suite("map", () => {
 
@@ -11,9 +10,9 @@ suite("map", () => {
     for (const game of games) {
 
         const json = require(`./games/${game}.json`);
-        const storage = new Storage(fs.readFileSync(json.storage.path));
+        const storage = Build.Models.Storage.Unserialize(fs.readFileSync(json.storage.path));
         const bytes = storage.Files.filter(f => f.name === json.map.path)[0].bytes;
-        const map = new Map(bytes);
+        const map = Build.Models.Map.Unserialize(bytes);
 
         test(`read-${game}-map`, () => {
             assert.equal(map.Sectors.length, json.map["expected-sectors"]);
@@ -23,8 +22,8 @@ suite("map", () => {
 
         test(`write-${game}-map`, () => {
             map.Sprites.push(Object.assign({}, map.Sprites[map.Sprites.length-1]));
-            const serialized = map.Serialize();
-            const unserialized = new Map(serialized);
+            const serialized = Build.Models.Map.Serialize(map);
+            const unserialized = Build.Models.Map.Unserialize(serialized);
             assert.equal(unserialized.Sprites.length, map.Sprites.length);
         });
 

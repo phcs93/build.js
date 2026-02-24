@@ -1,27 +1,34 @@
-ByteReader = (() => { try { return require("../../scripts/ByteReader.js"); } catch {} } )() ?? ByteReader;
-ByteWriter = (() => { try { return require("../../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
-
 // reference: https://moddingwiki.shikadi.net/wiki/ART_Format_(Build)
-class Art {
+Build.Models.Art = class Art {
 
     // TO-DO => figure out if there is a simpler way to do this (check xduke source code)
     static isolate = (v, s, e) => (v >> s) & (1 << e - s + 1) - 1;
     static attach = (v, s, e, n) => (v & ~(((1 << (e - s + 1)) - 1) << s)) | ((n & ((1 << (e - s + 1)) - 1)) << s);
     
-    constructor (bytes) {
+    constructor () {
+        this.Version = 1;
+        this.Length = 0;
+        this.Start = 0;
+        this.End = 0;
+        this.Tiles = [];
+    }
 
-        const reader = new ByteReader(bytes);
+    static Unserialize (bytes) {
 
-        this.Version = reader.uint32();
-        this.Length = reader.uint32();
-        this.Start = reader.uint32();
-        this.End = reader.uint32();
+        const art = new Art();
 
-        const numtiles = this.End - this.Start + 1;
+        const reader = new Build.Scripts.ByteReader(bytes);
 
-        this.Tiles = new Array(numtiles);
+        art.Version = reader.uint32();
+        art.Length = reader.uint32();
+        art.Start = reader.uint32();
+        art.End = reader.uint32();
 
-        for (let i = 0; i < numtiles; i++) this.Tiles[i] = {};
+        const numtiles = art.End - art.Start + 1;
+
+        art.Tiles = new Array(numtiles);
+
+        for (let i = 0; i < numtiles; i++) art.Tiles[i] = {};
 
         const sizex = [];
 
@@ -33,7 +40,7 @@ class Art {
     
         for (let i = 0; i < numtiles; i++) {
             const animation = reader.uint32();
-            this.Tiles[i].animation = {
+            art.Tiles[i].animation = {
                 frames: Art.isolate(animation, 0, 5) & 0x3F, // uint6
                 type: Art.isolate(animation, 6, 7), // int2
                 offsetX: (Art.isolate(animation, 8, 15) << 24) >> 24, // int8
@@ -44,49 +51,51 @@ class Art {
         }
 
         for (let i = 0; i < numtiles; i++) {
-            this.Tiles[i].pixels = [];
+            art.Tiles[i].pixels = [];
             for (let x = 0; x < sizex[i] ; x++) {
-                this.Tiles[i].pixels[x] = [];
+                art.Tiles[i].pixels[x] = [];
                 for (let y = 0; y < sizey[i]; y++) {
-                    this.Tiles[i].pixels[x][y] = reader.uint8();
+                    art.Tiles[i].pixels[x][y] = reader.uint8();
                 }
             }
         }
 
+        return art;
+
     }
 
-    Serialize() {
+    static Serialize(art) {
 
-        const writer = new ByteWriter();
+        const writer = new Build.Scripts.ByteWriter();
 
-        writer.int32(this.Version);
-        writer.int32(this.Numtiles);
-        writer.int32(this.Start);
-        writer.int32(this.End);
+        writer.int32(art.Version);
+        writer.int32(art.Length); // we could update this for the user...
+        writer.int32(art.Start);
+        writer.int32(art.End);
         
-        for (let i = 0; i < numtiles; i++) {
-            writer.int16(this.Tiles[i].pixels.length);
+        for (let i = 0; i < art.Tiles.length; i++) {
+            writer.int16(art.Tiles[i].pixels.length);
         }
 
-        for (let i = 0; i < numtiles; i++) {
-            writer.int16(this.Tiles[i].pixels.length > 0 ? this.Tiles[i].pixels[0].length : 0);
+        for (let i = 0; i < art.Tiles.length; i++) {
+            writer.int16(art.Tiles[i].pixels.length > 0 ? art.Tiles[i].pixels[0].length : 0);
         }        
 
-        for (let i = 0; i < numtiles; i++) {
+        for (let i = 0; i < art.Tiles.length; i++) {
             let animation = 0;
-            animation = Art.attach(animation, 0, 5, this.Tiles[i].animation.frames);
-            animation = Art.attach(animation, 6, 7, this.Tiles[i].animation.type);
-            animation = Art.attach(animation, 8, 15, this.Tiles[i].animation.offsetX);
-            animation = Art.attach(animation, 16, 23, this.Tiles[i].animation.offsetY);
-            animation = Art.attach(animation, 24, 27, this.Tiles[i].animation.speed);
-            animation = Art.attach(animation, 28, 31, this.Tiles[i].animation.unused);
+            animation = Art.attach(animation, 0, 5, art.Tiles[i].animation.frames);
+            animation = Art.attach(animation, 6, 7, art.Tiles[i].animation.type);
+            animation = Art.attach(animation, 8, 15, art.Tiles[i].animation.offsetX);
+            animation = Art.attach(animation, 16, 23, art.Tiles[i].animation.offsetY);
+            animation = Art.attach(animation, 24, 27, art.Tiles[i].animation.speed);
+            animation = Art.attach(animation, 28, 31, art.Tiles[i].animation.unused);
             writer.int32(animation);
         }
 
-        for (let i = 0; i < numtiles; i++) {
-            for (let x = 0; x < this.Tiles[i].pixels.length ; x++) {
-                for (let y = 0; y < this.Tiles[i].pixels[x].length; y++) {
-                    writer.int8(this.Tiles[i].pixels[x][y]);
+        for (let i = 0; i < art.Numtiles; i++) {
+            for (let x = 0; x < art.Tiles[i].pixels.length ; x++) {
+                for (let y = 0; y < art.Tiles[i].pixels[x].length; y++) {
+                    writer.int8(art.Tiles[i].pixels[x][y]);
                 }
             }
         }
@@ -96,5 +105,3 @@ class Art {
     };
 
 }
-
-try { module.exports = Art; } catch {}

@@ -1,17 +1,12 @@
-ByteReader = (() => { try { return require("../scripts/ByteReader.js"); } catch {} } )() ?? ByteReader;
-ByteWriter = (() => { try { return require("../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
-LZW = (() => { try { return require("../../scripts/LZW.js"); } catch {} } )() ?? LZW;
-ByteVersion = (() => { try { require("../../enums/ByteVersion.js"); return ByteVersion; } catch {} } )() ?? ByteVersion;
-
 // reference: https://web.archive.org/web/20150603141920/http://www.quakewiki.net/archives/demospecs/dmo/dmo.html
-class DMO {
+Build.Models.Demo.DMO = class DMO {
 
     static RECSYNCBUFSIZ = 2520;
     static InputSize = 10;
 
     constructor(bytes) {
 
-        const reader = new ByteReader(bytes);
+        const reader = new Build.Scripts.ByteReader(bytes);
 
         this.Inputs = new Array(reader.uint32());
         this.Version = reader.uint8();
@@ -52,7 +47,7 @@ class DMO {
         while (i < this.Inputs.length) {
 
             const size = Math.min(this.Inputs.length - i, DMO.RECSYNCBUFSIZ);
-            const _reader = new ByteReader(reader.kdfread(DMO.InputSize * this.Players, size / this.Players));
+            const _reader = new Build.Scripts.ByteReader(reader.kdfread(DMO.InputSize * this.Players, size / this.Players));
             
             for (let _i = 0; _i < size; _i++) {
                 this.Inputs[i++] = {
@@ -84,7 +79,7 @@ class DMO {
             this.Players +               // AimMode[Players] (int8)
             (ByteVersion.XDUKE_19_7_OR_HDUKE(this.Version) ? this.Players * 12 * 4 : 0); // WeaponChoice
 
-        const writer = new ByteWriter(
+        const writer = new Build.Scripts.ByteWriter(
             headerSize + 
             (this.Inputs.length * DMO.InputSize) +
             (Math.ceil((this.Inputs.length * DMO.InputSize) / LZW.size) *  (4096 + 2))
@@ -211,5 +206,3 @@ class DMO {
     }
 
 }
-
-try { module.exports = DMO; } catch {}

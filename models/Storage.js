@@ -1,66 +1,62 @@
-GRP = (() => { try { return require("./storage/GRP.js"); } catch {} } )() ?? GRP;
-PK3 = (() => { try { return require("./storage/PK3.js"); } catch {} } )() ?? PK3;
-RFF = (() => { try { return require("./storage/RFF.js"); } catch {} } )() ?? RFF;
-SSI = (() => { try { return require("./storage/SSI.js"); } catch {} } )() ?? SSI;
+Build.Models.Storage = class Storage {
 
-// this class is just an abstraction that identifies the provided storage file and reads it accordingly
-class Storage {
-
-    /**
-     * @param {Uint8Array} bytes - file bytes (preferred as Uint8Array)
-     * @param {keyof typeof import('../enums/StorageType')} [type] - storage file type
-     */
-    constructor (bytes, type) {
-
-        // if bytes and type provided, use type to determine storage format
-        if (bytes && type) {
+    // create empty storage object based on type
+    constructor (type) {
+        if (type) {
             switch (type) {
-                case "GRP": return new GRP(bytes);
-                case "PK3": return new PK3(bytes);
-                case "RFF": return new RFF(bytes);
-                case "SSI": return new SSI(bytes);
-                default: throw new Error(`Unknown storage type: ${type}`);
+                case Build.Enums.StorageType.GRP: return new GRP();
+                case Build.Enums.StorageType.PK3: return new PK3();
+                case Build.Enums.StorageType.RFF: return new RFF();
+                case Build.Enums.StorageType.SSI: return new SSI();
             }
+        }        
+    }
+
+    // add file to storage (this is the same for all storage types)
+    AddFile (name, bytes) {
+        this.Files.push({
+            name: name,
+            size: bytes.length,
+            bytes: bytes
+        });
+    }
+       
+    // transforms storage object into byte array
+    static Serialize (storage) {
+
+        // this looks stupid but it makes it easier to use outside when bundled into lib format
+        switch (storage.constructor.name) {
+            case "GRP": return Build.Models.Storage.GRP.Serialize(storage);
+            case "PK3": return Build.Models.Storage.PK3.Serialize(storage);
+            case "RFF": return Build.Models.Storage.RFF.Serialize(storage);
+            case "SSI": return Build.Models.Storage.SSI.Serialize(storage);
         }
 
-        // if only bytes provided, try to identify storage format by file signature
-        if (bytes && !type) {
+    }
 
-            // grp / prg
-            if (String.fromCharCode(...bytes.slice(0, 12)) === "KenSilverman") {
-                return new GRP(bytes);
-            }
-            
-            // pk3
-            if (String.fromCharCode(...bytes.slice(0, 4)) === "PK\x03\x04") {
-                return new PK3(bytes);
-            }
+    // transforms byte array into storage object
+    static Unserialize (bytes) {
 
-            // rff
-            if (String.fromCharCode(...bytes.slice(0, 4)) === "RFF\x1a") {
-                return new RFF(bytes);
-            }
-
-            // ssi
-            if (((bytes[0] << 0) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) === 2) {
-                return new SSI(bytes);
-            }
-
-        }
-
-        // if only type provided, create empty storage of that type
-        if (!bytes && type) {
-            switch (type) {
-                case "GRP": return new GRP();
-                case "PK3": return new PK3();
-                case "RFF": return new RFF();
-                case "SSI": return new SSI();
-                default: throw new Error(`Unknown storage type: ${type}`);
-            }
+        // grp / prg
+        if (String.fromCharCode(...bytes.slice(0, 12)) === "KenSilverman") {
+            return Build.Models.Storage.GRP.Unserialize(bytes);
         }
         
+        // pk3
+        if (String.fromCharCode(...bytes.slice(0, 4)) === "PK\x03\x04") {
+            return Build.Models.Storage.PK3.Unserialize(bytes);
+        }
+
+        // rff
+        if (String.fromCharCode(...bytes.slice(0, 4)) === "RFF\x1a") {
+            return Build.Models.Storage.RFF.Unserialize(bytes);
+        }
+
+        // ssi
+        if (((bytes[0] << 0) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) === 2) {
+            return Build.Models.Storage.SSI.Unserialize(bytes);
+        }
+
     }
 
 }
-
-try { module.exports = Storage; } catch {}

@@ -1,4 +1,4 @@
-SpriteCstat = {
+Build.Enums.SpriteCstat = {
     Blocking: 0,
     Transluscence1: 1,
     FlippedX: 2,

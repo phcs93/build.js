@@ -1,69 +1,81 @@
-ByteReader = (() => { try { return require("../../scripts/ByteReader.js"); } catch {} } )() ?? ByteReader;
-ByteWriter = (() => { try { return require("../../scripts/ByteWriter.js"); } catch {} } )() ?? ByteWriter;
-
 // reference: https://moddingwiki.shikadi.net/wiki/GRP_Format
-class GRP {
+Build.Models.Storage.GRP = class GRP extends Build.Models.Storage {
 
-    // sizes
+    // header sizes
     static HeaderSize = 16;
     static FileHeaderSize = 16;
 
-    constructor (bytes) {
+    // create empty grp object
+    constructor () {
+        super();
+        this.Signature = "KenSilverman";
+        this.Files = [];
+    }
+
+    // transforms byte array into grp object
+    static Unserialize (bytes) {
+
+        // create empty grp object
+        const grp = new GRP();
 
         // create byte reader
-        const reader = new ByteReader(bytes);
+        const reader = new Build.Scripts.ByteReader(bytes);
 
         // read ken silverman signature
-        this.Signature = reader.string(12);
+        grp.Signature = reader.string(12);
 
         // read number of files
-        this.Files = new Array(reader.uint32());
+        grp.Files = new Array(reader.uint32());
 
         // read file names and sizes
-        for (let i = 0; i < this.Files.length; i++) {
-            this.Files[i] = {
+        for (let i = 0; i < grp.Files.length; i++) {
+            grp.Files[i] = {
                 name: reader.string(12),
                 size: reader.uint32(),
                 bytes: null
-            }
+            };
         }
 
         // read file bytes
-        for (let i = 0; i < this.Files.length; i++) {
-            this.Files[i].bytes = reader.read(this.Files[i].size);
+        for (let i = 0; i < grp.Files.length; i++) {
+            grp.Files[i].bytes = reader.read(grp.Files[i].size);
         }
+
+        // return filled grp object
+        return grp;
 
     }
 
-    Serialize () {
+    // transforms grp object into byte array
+    static Serialize (grp) {
 
         // create byte writer
-        const writer = new ByteWriter(
+        const writer = new Build.Scripts.ByteWriter(
             GRP.HeaderSize + 
-            this.Files.length * GRP.FileHeaderSize + 
-            this.Files.reduce((sum, f) => sum + f.bytes.length, 0)
+            grp.Files.length * GRP.FileHeaderSize + 
+            grp.Files.reduce((sum, f) => sum + f.bytes.length, 0)
         );
 
         // write ken silverman string
-        writer.string(this.Signature, 12);
+        writer.string(grp.Signature, 12);
 
         // write number of files
-        writer.int32(this.Files.length);
+        writer.int32(grp.Files.length);
         
         // write file names and sizes
-        for (let i = 0; i < this.Files.length; i++) {
+        for (let i = 0; i < grp.Files.length; i++) {
 
             // name
-            writer.string(this.Files[i].name, 12);
+            writer.string(grp.Files[i].name, 12);
 
             // size
-            writer.int32(this.Files[i].bytes.length);
+            writer.int32(grp.Files[i].bytes.length);
             
         }
 
         // write file bytes
-        for (let i = 0; i < this.Files.length; i++) {            
-            writer.write(this.Files[i].bytes);
+        for (let i = 0; i < grp.Files.length; i++) {            
+            writer.write(grp.Files[i].bytes);
         }
 
         // return array of bytes
@@ -72,5 +84,3 @@ class GRP {
     }
 
 }
-
-try { module.exports = GRP; } catch {}

@@ -1,1 +1,1 @@
-https://moddingwiki.shikadi.net/wiki/Duke_Nukem_3D_Palette_Format
+// reference: https://moddingwiki.shikadi.net/wiki/Duke_Nukem_3D_Palette_Format

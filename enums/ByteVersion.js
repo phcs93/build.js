@@ -1,4 +1,4 @@
-ByteVersion = {
+Build.Enums.ByteVersion = {
     DOS_1_3               : 1,
     DOS_1_3_1_4_Plutonium : 27,
     DOS_1_4_Plutonium     : 116,
@@ -21,16 +21,16 @@ ByteVersion = {
     PRODUKE               : 150,
     XDUKE_19_7_OR_HDUKE: (version) => {
         return [
-            ByteVersion.XDUKE_19_7,
-            ByteVersion.HDUKE_1,
-            ByteVersion.HDUKE_2,
-            ByteVersion.HDUKE_3,
-            ByteVersion.HDUKE_4,
-            ByteVersion.HDUKE_5,
-            ByteVersion.HDUKE_6,
-            ByteVersion.HDUKE,
-            ByteVersion.HDUKE_TDM,
-            ByteVersion.HDUKE_FORTS
+            Build.Enums.ByteVersion.XDUKE_19_7,
+            Build.Enums.ByteVersion.HDUKE_1,
+            Build.Enums.ByteVersion.HDUKE_2,
+            Build.Enums.ByteVersion.HDUKE_3,
+            Build.Enums.ByteVersion.HDUKE_4,
+            Build.Enums.ByteVersion.HDUKE_5,
+            Build.Enums.ByteVersion.HDUKE_6,
+            Build.Enums.ByteVersion.HDUKE,
+            Build.Enums.ByteVersion.HDUKE_TDM,
+            Build.Enums.ByteVersion.HDUKE_FORTS
         ].some(v => v == version);
     }
 }

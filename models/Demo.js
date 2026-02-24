@@ -1,15 +1,27 @@
-DMO = (() => { try { return require("./demo/DMO.js"); } catch {} } )() ?? DMO;
+Build.Models.Demo = class Demo {
 
-// this class is just an abstraction that identifies the provided map file and reads it accordingly
-class Demo {
+    // create empty demo object based on type
+    constructor(type) {
+        if (type) {
+            switch (type) {
+                case Build.Enums.DemoType.DMO: return new DMO();
+            }
+        }  
+    }
 
-    constructor(bytes) {
+    // transforms demo object into byte array
+    static Serialize (demo) {
 
-        // dmo
-        return new DMO(bytes);
+        // this looks stupid but it makes it easier to use outside when bundled into lib format
+        switch (demo.constructor.name) {
+            case "DMO": return Build.Models.Demo.DMO.Serialize();
+        }
 
     }
 
-}
+    // transforms byte array into demo object
+    static Unserialize (bytes) {        
+        return Build.Models.Demo.DMO.Unserialize(bytes);
+    }
 
-try { module.exports = Demo; } catch {}
+}

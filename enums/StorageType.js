@@ -1,6 +1,6 @@
-StorageType = {
-    GRP, // dn3d, rr, sw
-    PK3, // fury
-    RFF, // blood
-    SSI, // dlc
+Build.Enums.StorageType = {
+    GRP: "GRP", // dn, rr, sw
+    PK3: "PK3", // fury
+    RFF: "RFF", // blood
+    SSI: "SSI", // dlc
 }

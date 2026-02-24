@@ -1,4 +1,4 @@
-class LZW {
+Build.Scripts.LZW = class LZW {
 
     static size = 16384;
 
@@ -21,7 +21,7 @@ class LZW {
 
         let addrcnt = 256;
         let bytecnt1 = 0;
-        let bitcnt = 32; // header ocupa 4 bytes = 32 bits
+        let bitcnt = 32;
         let numbits = 8;
         let oneupnumbits = 1 << 8;
 
@@ -91,18 +91,16 @@ class LZW {
 
         writeCode(data[uncompleng - 1]);
 
-        // escreve header
         const dv = new DataView(outbuf.buffer);
-        dv.setUint16(0, uncompleng, true);  // tamanho descomprimido
+        dv.setUint16(0, uncompleng, true);
 
         const finalLen = (bitcnt + 7) >> 3;
 
         if (finalLen < uncompleng) {
-            dv.setUint16(2, addrcnt, true); // strtot
+            dv.setUint16(2, addrcnt, true);
             return outbuf.slice(0, finalLen);
         }
 
-        // fallback: sem compressão
         dv.setUint16(2, 0, true);
 
         const out = new Uint8Array(uncompleng + 4);
@@ -117,7 +115,6 @@ class LZW {
         const uncompleng = data[0] | (data[1] << 8);
         const strtot      = data[2] | (data[3] << 8);
 
-        // Se não comprimido
         if (strtot === 0) {
             return data.slice(4, 4 + uncompleng);
         }
@@ -197,5 +194,3 @@ class LZW {
     }
 
 }
-
-try { module.exports = LZW; } catch {}

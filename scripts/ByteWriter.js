@@ -1,4 +1,4 @@
-class ByteWriter {
+Build.Scripts.ByteWriter = class ByteWriter {
     
     constructor(length) {
         this.bytes = new Uint8Array(length);
@@ -56,5 +56,3 @@ class ByteWriter {
     }
 
 }
-
-try { module.exports = ByteWriter; } catch {}
