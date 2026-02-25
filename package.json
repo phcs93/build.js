@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "build": "node build.js --build"
   },
   "author": "phcs93",
   "license": "ISC"
