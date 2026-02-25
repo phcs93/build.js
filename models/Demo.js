@@ -14,7 +14,7 @@ Build.Models.Demo = class Demo {
 
         // this looks stupid but it makes it easier to use outside when bundled into lib format
         switch (demo.constructor.name) {
-            case "DMO": return Build.Models.Demo.DMO.Serialize();
+            case "DMO": return Build.Models.Demo.DMO.Serialize(demo);
         }
 
     }

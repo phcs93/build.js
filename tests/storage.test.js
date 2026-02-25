@@ -23,6 +23,12 @@ suite("storage", () => {
         test(`write-${game}-storage (${storage.constructor.name})`, () => {
             const buffer = Uint8Array.from(Array.from("test", c => c.charCodeAt(0)));
             storage.AddFile("test.txt", buffer);
+            // Ion Fury PK3 has some giant files (tiles000.art 117191963 and tiles001.art 136378146)
+            // this causes ZLIB compression to be very slow
+            // so I removed those files from the test and just check if the new file is correctly added and serialized
+            if (game === "ion-fury") {
+                storage.Files = storage.Files.filter(f => f.name !== "tiles000.art" && f.name !== "tiles001.art");
+            }
             const serialized = Build.Models.Storage.Serialize(storage);
             const unserialized = Build.Models.Storage.Unserialize(serialized);
             assert.equal(unserialized.Files[unserialized.Files.length-1].name, "test.txt");

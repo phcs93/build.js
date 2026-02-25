@@ -21,12 +21,28 @@ suite("art", () => {
             assert.equal(art.Tiles.length, json.art["expected-tiles"]);
         });
 
-        // test(`write-${game}-art`, () => {
-        //     map.Sprites.push(Object.assign({}, map.Sprites[map.Sprites.length-1]));
-        //     const serialized = map.Serialize();
-        //     const unserialized = new Map(serialized);
-        //     assert.equal(unserialized.Sprites.length, map.Sprites.length);
-        // });
+        test(`write-${game}-art`, () => {
+            let index = 0;
+            for (let i = 0; i < art.Tiles.length; i++) {
+                // change the first tile to be a random 3x9 rectangle
+                if (art.Tiles[i].pixels.length > 0 && art.Tiles[i].pixels[0].length > 0) {
+                    art.Tiles[i].pixels = [
+                        [0, 4, 0, 1, 0, 0, 3, 0, 0],
+                        [0, 0, 5, 2, 2, 2, 0, 9, 4],
+                        [7, 0, 0, 8, 0, 5, 0, 0, 9]
+                    ];
+                    index = i;
+                    break;
+                }
+            }
+            const serialized = Build.Models.Art.Serialize(art);
+            const unserialized = Build.Models.Art.Unserialize(serialized);
+            assert.deepStrictEqual(unserialized.Tiles[index].pixels, [
+                [0, 4, 0, 1, 0, 0, 3, 0, 0],
+                [0, 0, 5, 2, 2, 2, 0, 9, 4],
+                [7, 0, 0, 8, 0, 5, 0, 0, 9]
+            ]);
+        });
 
     }    
 

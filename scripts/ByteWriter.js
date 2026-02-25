@@ -23,16 +23,14 @@ Build.Scripts.ByteWriter = class ByteWriter {
         else if (buffer instanceof ArrayBuffer) ptr = new Uint8Array(buffer);
         else ptr = Uint8Array.from(buffer);
 
-        const LZW = (() => { try { return require("../scripts/LZW.js"); } catch {} })() ?? LZW;
+        if (dasizeof > Build.Scripts.LZW.size) { count *= dasizeof; dasizeof = 1; }
 
-        if (dasizeof > LZW.size) { count *= dasizeof; dasizeof = 1; }
-
-        const diffBuf = new Uint8Array(LZW.size);
+        const diffBuf = new Uint8Array(Build.Scripts.LZW.size);
         let k = 0;
 
         const compressChunk = () => {
             if (k <= 0) return;
-            const comp = LZW.compress(diffBuf.subarray(0, k));
+            const comp = Build.Scripts.LZW.compress(diffBuf.subarray(0, k));
             this.int16(comp.length);
             this.write(comp);
             k = 0;
@@ -41,14 +39,14 @@ Build.Scripts.ByteWriter = class ByteWriter {
         diffBuf.set(ptr.subarray(0, dasizeof), 0);
         k = dasizeof;
 
-        if (k > LZW.size - dasizeof) compressChunk();
+        if (k > Build.Scripts.LZW.size - dasizeof) compressChunk();
 
         for (let i = 1; i < count; i++) {
             const prevBase = (i - 1) * dasizeof;
             const currBase = i * dasizeof;
             for (let j = 0; j < dasizeof; j++) diffBuf[k + j] = (ptr[currBase + j] - ptr[prevBase + j]) & 0xFF;
             k += dasizeof;
-            if (k > LZW.size - dasizeof) compressChunk();
+            if (k > Build.Scripts.LZW.size - dasizeof) compressChunk();
         }
 
         compressChunk();

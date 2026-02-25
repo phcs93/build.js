@@ -36,3 +36,19 @@ w.prototype.e=function(){var c=new (t?Uint8Array:Array)(this.a-32768),d=this.a-3
 w.prototype.u=function(c){var d,a=this.input.length/this.d+1|0,b,e,f,g=this.input,h=this.b;c&&("number"===typeof c.o&&(a=c.o),"number"===typeof c.q&&(a+=c.q));2>a?(b=(g.length-this.d)/this.n[2],f=258*(b/2)|0,e=f<h.length?h.length+f:h.length<<1):e=h.length*a;t?(d=new Uint8Array(e),d.set(h)):d=h;return this.b=d};
 w.prototype.m=function(){var c=0,d=this.b,a=this.g,b,e=new (t?Uint8Array:Array)(this.k+(this.a-32768)),f,g,h,l;if(0===a.length)return t?this.b.subarray(32768,this.a):this.b.slice(32768,this.a);f=0;for(g=a.length;f<g;++f){b=a[f];h=0;for(l=b.length;h<l;++h)e[c++]=b[h]}f=32768;for(g=this.a;f<g;++f)e[c++]=d[f];this.g=[];return this.buffer=e};
 w.prototype.r=function(){var c,d=this.a;t?this.p?(c=new Uint8Array(d),c.set(this.b.subarray(0,d))):c=this.b.subarray(0,d):(this.b.length>d&&(this.b.length=d),c=this.b);return this.buffer=c};r("Zlib.RawInflate",w);r("Zlib.RawInflate.prototype.decompress",w.prototype.t);var X={ADAPTIVE:y,BLOCK:A},Y,Z,$,fa;if(Object.keys)Y=Object.keys(X);else for(Z in Y=[],$=0,X)Y[$++]=Z;$=0;for(fa=Y.length;$<fa;++$)Z=Y[$],r("Zlib.RawInflate.BufferType."+Z,X[Z]);}).call(this);
+
+;(function() {
+	var zlibObj;
+	if (typeof globalThis !== 'undefined' && globalThis.Zlib) zlibObj = globalThis.Zlib;
+	else if (typeof module !== 'undefined' && module.exports && module.exports.Zlib) zlibObj = module.exports.Zlib;
+	else if (typeof this !== 'undefined' && this && this.Zlib) zlibObj = this.Zlib;
+	else if (typeof Zlib !== 'undefined') zlibObj = Zlib;
+
+	if (zlibObj) {
+		if (typeof globalThis !== 'undefined' && globalThis.Build && globalThis.Build.Scripts) {
+			globalThis.Build.Scripts.ZLIB = zlibObj;
+		} else if (typeof Build !== 'undefined' && Build && Build.Scripts) {
+			Build.Scripts.ZLIB = zlibObj;
+		}
+	}
+})();

@@ -20,9 +20,7 @@ Build.Scripts.ByteReader = class ByteReader {
     // by chatgpt (based on kdfread from build engine code itself)
     kdfread(dasizeof, count) {
 
-        const LZW = (() => { try { return require("../scripts/LZW.js"); } catch {} } )() ?? LZW;
-
-        if (dasizeof > LZW.size) {
+        if (dasizeof > Build.Scripts.LZW.size) {
             count = count * dasizeof;
             dasizeof = 1;
         }
@@ -32,7 +30,7 @@ Build.Scripts.ByteReader = class ByteReader {
 
         let leng = this.uint16();
         let comp = this.read(leng);
-        let lzw = LZW.uncompress(comp);
+        let lzw = Build.Scripts.LZW.uncompress(comp);
         let k = 0;
         let kgoal = lzw.length;
 
@@ -43,7 +41,7 @@ Build.Scripts.ByteReader = class ByteReader {
             if (k >= kgoal) {
                 leng = this.uint16();
                 comp = this.read(leng);
-                lzw = LZW.uncompress(comp);
+                lzw = Build.Scripts.LZW.uncompress(comp);
                 k = 0;
                 kgoal = lzw.length;
             }

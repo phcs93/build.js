@@ -1,5 +1,5 @@
 // reference: https://github.com/camoto-project/gamearchivejs/blob/master/formats/arc-rff-blood-common.js
-Build.Models.Storage.RFF = class RFF {
+Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
 
     // sizes
     static HeaderSize = 32;
@@ -28,35 +28,50 @@ Build.Models.Storage.RFF = class RFF {
     // util
     static toUnixTime = d => d.valueOf() / 1000 - new Date().getTimezoneOffset() * 60;
 
-    constructor (bytes) {
+    // create empty rff object
+    constructor() {
+        super();
+        this.Signature = "RFF\x1A";
+        this.Version = 0;
+        this.Padding1 = new Uint8Array(2).fill(0);
+        this.Offset = 0;
+        this.Files = [];
+        this.Padding2 = new Uint8Array(16).fill(0);        
+    }
+
+    // transform byte array into rff object
+    static Unserialize (bytes) {
+
+        // create empty rff object
+        const rff = new RFF();
 
         // create byte reader
         const reader = new Build.Scripts.ByteReader(bytes);
 
         // read RFF\x1a signature
-        this.Signature = reader.string(4);
+        rff.Signature = reader.string(4);
 
         // read version
         // 0x0200 - shareware 0.99 (CD version) - FAT is not encrypted
         // 0x0300 - registered 1.00 - FAT is encrypted
         // 0x0301 - patches for registered and later shareware releases - FAT is encrypted
-        this.Version = reader.uint16();
+        rff.Version = reader.uint16();
 
         // unused
-        this.Padding1 = reader.read(2);
+        rff.Padding1 = reader.read(2);
 
         // read fat offset (file headers offset)
-        this.Offset = reader.uint32();
+        rff.Offset = reader.uint32();
 
         // read number of files
-        this.Files = new Array(reader.uint32());
+        rff.Files = new Array(reader.uint32());
 
         // unused
-        this.Padding2 = reader.read(16);
+        rff.Padding2 = reader.read(16);
 
         // decrypt chunk of file headers bytes (these are located AFTER the file contents)
-        const fileHeadersBytes = RFF.decrypt(reader.bytes.slice(this.Offset, this.Offset + this.Files.length * RFF.FileHeaderSize), {
-            seed: this.Offset & 0xFF,
+        const fileHeadersBytes = RFF.decrypt(reader.bytes.slice(rff.Offset, rff.Offset + rff.Files.length * RFF.FileHeaderSize), {
+            seed: rff.Offset & 0xFF,
             offset: 0,
             limit: 0
         });
@@ -65,8 +80,8 @@ Build.Models.Storage.RFF = class RFF {
         const fileHeaderReader = new Build.Scripts.ByteReader(fileHeadersBytes);
 
         // read files headers
-        for (let i = 0; i < this.Files.length; i++) {
-            this.Files[i] = {
+        for (let i = 0; i < rff.Files.length; i++) {
+            rff.Files[i] = {
                 cache: fileHeaderReader.read(16),
                 offset: fileHeaderReader.uint32(),
                 size: fileHeaderReader.uint32(),
@@ -79,84 +94,87 @@ Build.Models.Storage.RFF = class RFF {
                 bytes: []
             };
             // just for better readability -> this needs to be undone when writing back
-            this.Files[i].name += `.${this.Files[i].type}`;
+            rff.Files[i].name += `.${rff.Files[i].type}`;
         }
 
         // read files contents
-        for (let i = 0; i < this.Files.length; i++) {
-            const bytes = reader.bytes.slice(this.Files[i].offset, this.Files[i].offset + this.Files[i].size);
-            this.Files[i].bytes = (this.Files[i].flags & 16) ? RFF.decrypt(bytes, { seed: 0, offset: 0, limit: 256 }) : bytes;
+        for (let i = 0; i < rff.Files.length; i++) {
+            const bytes = reader.bytes.slice(rff.Files[i].offset, rff.Files[i].offset + rff.Files[i].size);
+            rff.Files[i].bytes = (rff.Files[i].flags & 16) ? RFF.decrypt(bytes, { seed: 0, offset: 0, limit: 256 }) : bytes;
         }
+
+        // return filled rff object
+        return rff;
 
     }
 
-    // serialize function
-    Serialize () {
+    // transform rff object into byte array
+    static Serialize (rff) {
 
         // file content size offsets (initialize pointing to after the rff header)
         let offset = RFF.HeaderSize;
 
         // encrypt file contents before performing any calculations
-        for (let i = 0; i < this.Files.length; i++) {
-            this.Files[i].flags |= 16;
-            this.Files[i].bytes = (this.Files[i].flags & 16) ? RFF.encrypt(this.Files[i].bytes, { seed: 0, offset: 0, limit: 256 }) : this.Files[i].bytes;
-            this.Files[i].size = this.Files[i].bytes.length;
-            this.Files[i].offset = offset;
-            offset += this.Files[i].size;
+        for (let i = 0; i < rff.Files.length; i++) {
+            rff.Files[i].flags |= 16;
+            rff.Files[i].bytes = (rff.Files[i].flags & 16) ? RFF.encrypt(rff.Files[i].bytes, { seed: 0, offset: 0, limit: 256 }) : rff.Files[i].bytes;
+            rff.Files[i].size = rff.Files[i].bytes.length;
+            rff.Files[i].offset = offset;
+            offset += rff.Files[i].size;
         }
 
         // create byte writer
         const writer = new Build.Scripts.ByteWriter(
             RFF.HeaderSize + 
-            this.Files.reduce((sum, f) => sum += f.size , 0) + 
-            this.Files.length * RFF.FileHeaderSize
+            rff.Files.reduce((sum, f) => sum += f.size , 0) + 
+            rff.Files.length * RFF.FileHeaderSize
         );
 
         // write RFF\x1A signature
-        writer.string(this.Signature, 4);
+        writer.string(rff.Signature, 4);
 
         // write version
         // 0x0200 - shareware 0.99 (CD version) - FAT is not encrypted
         // 0x0300 - registered 1.00 - FAT is encrypted
         // 0x0301 - patches for registered and later shareware releases - FAT is encrypted
-        writer.int16(this.Version);
+        writer.int16(rff.Version);
 
         // unused
-        writer.write(this.Padding1);
+        writer.write(rff.Padding1);
 
         // write fat offset (file headers offset)
-        writer.int32(RFF.HeaderSize + this.Files.reduce((sum, f) => sum += f.size , 0));
+        writer.int32(RFF.HeaderSize + rff.Files.reduce((sum, f) => sum += f.size , 0));
 
         // write number of files
-        writer.int32(this.Files.length);
+        writer.int32(rff.Files.length);
 
         // unused
-        writer.write(this.Padding2);                
+        writer.write(rff.Padding2);                
 
         // write file contents
-        for (let i = 0; i < this.Files.length; i++) {            
-            writer.write(this.Files[i].bytes);
-            //const bytes = this.Files[i].flags & 16 ? encrypt(this.Files[i].bytes, { seed: 0, offset: 0, limit: 256 }) : this.Files[i].bytes;
+        for (let i = 0; i < rff.Files.length; i++) {            
+            writer.write(rff.Files[i].bytes);
+            //const bytes = rff.Files[i].flags & 16 ? encrypt(rff.Files[i].bytes, { seed: 0, offset: 0, limit: 256 }) : rff.Files[i].bytes;
             //writer.write(bytes);
-            //this.Files[i].offset = offset;
+            //rff.Files[i].offset = offset;
             // this needs to be calculated here because of the encryption
             //offset += bytes.length;
         }
 
         // create file header writer
-        const fileHeaderWriter = new Build.Scripts.ByteWriter(this.Files.length * RFF.FileHeaderSize);
+        const fileHeaderWriter = new Build.Scripts.ByteWriter(rff.Files.length * RFF.FileHeaderSize);
 
         // write files headers
-        for (let i = 0; i < this.Files.length; i++) {
-            fileHeaderWriter.write(this.Files[i].cache || new Uint8Array(16).fill(0)); // unused
-            fileHeaderWriter.int32(this.Files[i].offset);
-            fileHeaderWriter.int32(this.Files[i].size);
-            fileHeaderWriter.int32(this.Files[i].packedSize); // packed size
-            fileHeaderWriter.int32(this.Files[i].time || RFF.toUnixTime(new Date())); // last modified
-            fileHeaderWriter.int8(this.Files[i].flags);
-            fileHeaderWriter.string(this.Files[i].name.split(".")[1], 3); // extension
-            fileHeaderWriter.string(this.Files[i].name.split(".")[0], 8); // name
-            fileHeaderWriter.int32(this.Files[i].id || 0);
+        for (let i = 0; i < rff.Files.length; i++) {
+            fileHeaderWriter.write(rff.Files[i].cache || new Uint8Array(16).fill(0)); // unused
+            fileHeaderWriter.int32(rff.Files[i].offset);
+            fileHeaderWriter.int32(rff.Files[i].size);
+            fileHeaderWriter.int32(rff.Files[i].packedSize); // packed size
+            fileHeaderWriter.int32(rff.Files[i].time || RFF.toUnixTime(new Date())); // last modified
+            fileHeaderWriter.int8(rff.Files[i].flags);
+            fileHeaderWriter.string(rff.Files[i].name.split(".")[1], 3); // extension
+            fileHeaderWriter.string(rff.Files[i].name.split(".")[0], 8); // name
+            fileHeaderWriter.int32(rff.Files[i].id || 0);
         }
 
         // encrypt chunks of file headers
@@ -166,6 +184,7 @@ Build.Models.Storage.RFF = class RFF {
             limit: 0
         }));
 
+        // return bytes
         return writer.bytes;
 
     }
