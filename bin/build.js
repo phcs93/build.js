@@ -18,81 +18,93 @@ globalThis.Build = {
 };
 
 // only run this code if we are in a nodejs environment
-if (typeof process !== "undefined" && process.versions && process.versions.node) {
+if (process && process.versions && process.versions.node) {
 
     // get file system module to read the files in the directory
     const fs = require("node:fs");
 
-    // check if we are building the library
-    if (process.argv[2] === "--build") {
+    // check the npm lifecycle event to see if we are building or testing the library
+    switch (process.env.npm_lifecycle_event) {
 
-        // array to store the contents of all files
-        const library = [fs.readFileSync(__dirname + '/build.js', "utf-8")];
+        // generate build.js file
+        case "build": {
 
-        // this function will recursively get the contents of all the files in the given directory and its subdirectories
-        function recursiveRead(dir) {
+            // array to store the contents of all files
+            const library = [fs.readFileSync(__dirname + '/build.js', "utf-8")];
 
-            // load the files in the current folder
-            for (const entry of fs.readdirSync(dir)) {
-                const fullPath = dir + '/' + entry;
-                if (!fs.statSync(fullPath).isDirectory() && entry.endsWith('.js')) {
-                    library.push(fs.readFileSync(fullPath, "utf-8"));
+            // this function will recursively get the contents of all the files in the given directory and its subdirectories
+            function recursiveRead(dir) {
+
+                // load the files in the current folder
+                for (const entry of fs.readdirSync(dir)) {
+                    const fullPath = dir + '/' + entry;
+                    if (!fs.statSync(fullPath).isDirectory() && entry.endsWith('.js')) {
+                        library.push(fs.readFileSync(fullPath, "utf-8"));
+                    }
                 }
+
+                // load the files in the subfolders
+                for (const entry of fs.readdirSync(dir)) {
+                    const fullPath = dir + '/' + entry;
+                    if (fs.statSync(fullPath).isDirectory()) {
+                        recursiveRead(fullPath);
+                    }
+                }
+
             }
 
-            // load the files in the subfolders
-            for (const entry of fs.readdirSync(dir)) {
-                const fullPath = dir + '/' + entry;
-                if (fs.statSync(fullPath).isDirectory()) {
-                    recursiveRead(fullPath);
-                }
+            // load the scripts, enums and models into th library array
+            recursiveRead(__dirname + '/scripts');
+            recursiveRead(__dirname + '/enums');
+            recursiveRead(__dirname + '/models');
+
+            // create bin folder if it doesn't exist
+            if (!fs.existsSync(__dirname + '/bin')) {
+                fs.mkdirSync(__dirname + '/bin');
             }
+
+            // create full js file library output
+            fs.writeFileSync(__dirname + '/bin/build.js', library.join("\n\n"), "utf-8");
+
+            break;
 
         }
 
-        // load the scripts, enums and models into th library array
-        recursiveRead(__dirname + '/scripts');
-        recursiveRead(__dirname + '/enums');
-        recursiveRead(__dirname + '/models');
+        // run unit tests
+        case "test": {
 
-        // create bin folder if it doesn't exist
-        if (!fs.existsSync(__dirname + '/bin')) {
-            fs.mkdirSync(__dirname + '/bin');
-        }
+            // this function will recursively require all the files in the given directory and its subdirectories
+            function recursiveRequire(dir) {
 
-        // create ful js file library output
-        fs.writeFileSync(__dirname + '/bin/build.js', library.join("\n\n"), "utf-8");
-
-    } else {
-
-        // this function will recursively require all the files in the given directory and its subdirectories
-        function recursiveRequire(dir) {
-
-            // load the files in the current folder
-            for (const entry of fs.readdirSync(dir)) {
-                const fullPath = dir + '/' + entry;
-                if (!fs.statSync(fullPath).isDirectory() && entry.endsWith('.js')) {
-                    require(fullPath);
+                // load the files in the current folder
+                for (const entry of fs.readdirSync(dir)) {
+                    const fullPath = dir + '/' + entry;
+                    if (!fs.statSync(fullPath).isDirectory() && entry.endsWith('.js')) {
+                        require(fullPath);
+                    }
                 }
+
+                // load the files in the subfolders
+                for (const entry of fs.readdirSync(dir)) {
+                    const fullPath = dir + '/' + entry;
+                    if (fs.statSync(fullPath).isDirectory()) {
+                        recursiveRequire(fullPath);
+                    }
+                }
+
             }
 
-            // load the files in the subfolders
-            for (const entry of fs.readdirSync(dir)) {
-                const fullPath = dir + '/' + entry;
-                if (fs.statSync(fullPath).isDirectory()) {
-                    recursiveRequire(fullPath);
-                }
-            }
+            // load the scripts, enums and models in the "build" folder
+            recursiveRequire(__dirname + '/scripts');
+            recursiveRequire(__dirname + '/enums');
+            recursiveRequire(__dirname + '/models');
 
         }
 
-        // load the scripts, enums and models in the "build" folder
-        recursiveRequire(__dirname + '/scripts');
-        recursiveRequire(__dirname + '/enums');
-        recursiveRequire(__dirname + '/models');
-
-        // export the variable just in case someone requires it and stores in a variable
-        module.exports = Build;
+        default: {
+            module.exports = Build;
+            break;
+        }
 
     }
 
