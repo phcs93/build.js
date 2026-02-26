@@ -101,6 +101,7 @@ if (process && process.versions && process.versions.node) {
 
         }
 
+        // if we are not building or testing, just export the Build variable as a module
         default: {
             module.exports = Build;
             break;
