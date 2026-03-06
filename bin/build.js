@@ -983,7 +983,10 @@ Build.Models.Storage = class Storage {
         }
 
         // ssi
-        if (((bytes[0] << 0) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) === 2) {
+        if (
+            (((bytes[0] << 0) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) === 1) ||
+            (((bytes[0] << 0) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) === 2)
+        ) {
             return Build.Models.Storage.SSI.Unserialize(bytes);
         }
 
@@ -2497,9 +2500,17 @@ Build.Models.Storage.SSI = class SSI extends Build.Models.Storage {
 
         // read file names and sizes
         for (let i = 0; i < ssi.Files.length; i++) {
-            const numchars = reader.uint8();
+            const numchars = reader.uint8();            
+            const originalFileName = reader.string(12).slice(0, numchars);
+            const fileName = originalFileName.split(".")[0];
+            let fileExtension = originalFileName.split(".")[1];
+            if (ssi.Version === 2) {
+                if (fileExtension.toUpperCase() !== "MAP") {
+                    fileExtension = fileExtension.split("").reverse().join("");
+                }
+            }
             ssi.Files[i] = {
-                name: reader.string(12).slice(0, numchars),
+                name: `${fileName}.${fileExtension}`,
                 size: reader.uint32(),
                 fill: reader.read(34+1+69), // unknown
                 bytes: null
@@ -2561,8 +2572,15 @@ Build.Models.Storage.SSI = class SSI extends Build.Models.Storage {
 
         // write file names and sizes
         for (let i = 0; i < ssi.Files.length; i++) {
+            const fileName = ssi.Files[i].name.split(".")[0];
+            let fileExtension = ssi.Files[i].name.split(".")[1];
+            if (ssi.Version === 2) {
+                if (fileExtension.toUpperCase() !== "MAP") {
+                    fileExtension = fileExtension.split("").reverse().join("");
+                }
+            }
             writer.int8(ssi.Files[i].name.length);
-            writer.string(ssi.Files[i].name, 12);
+            writer.string(`${fileName}.${fileExtension}`, 12);
             writer.int32(ssi.Files[i].bytes.length);
             writer.write(ssi.Files[i].fill || new Array(34+1+69).fill(0));
         }

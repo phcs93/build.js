@@ -10,11 +10,11 @@ suite("storage", () => {
     for (const game of games) {
 
         const json = require(`./games/${game}.json`);
-        const storage = Build.Models.Storage.Unserialize(fs.readFileSync(json.storage.path));
+        const bytes = fs.readFileSync(json.storage.path);
+        const storage = Build.Models.Storage.Unserialize(bytes);
 
         test(`read-${game}-storage (${storage.constructor.name})`, () => {
             const actuall = storage.Files.map(f => ({name: f.name, size: f.size}));
-            //console.log(actuall);
             //fs.writeFileSync(`temp-${game}.json`, JSON.stringify(actuall, null, "\t"));
             assert.equal(storage.Files.length, json.storage["expected-files"].length);
             assert.deepStrictEqual(actuall, json.storage["expected-files"]);
@@ -34,6 +34,14 @@ suite("storage", () => {
             assert.equal(unserialized.Files[unserialized.Files.length-1].name, "test.txt");
             assert.equal(unserialized.Files[unserialized.Files.length-1].size, buffer.length);
             assert.deepStrictEqual([...unserialized.Files[unserialized.Files.length-1].bytes], [...buffer]);
+        });
+
+        // BUG: ssi and rff are not being correctly serialized back
+        // # SSI: probably because of the unknown part that gets replaced by zeros
+        // # RFF: probably because of the compression, but I haven't investigated it yet
+        test(`copy-${game}-storage (${storage.constructor.name})`, () => {
+            const serialized = Build.Models.Storage.Serialize(storage);
+            assert.ok(Buffer.from(serialized).equals(Buffer.from(bytes)));
         });
 
     }    

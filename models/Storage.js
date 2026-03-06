@@ -53,7 +53,10 @@ Build.Models.Storage = class Storage {
         }
 
         // ssi
-        if (((bytes[0] << 0) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) === 2) {
+        if (
+            (((bytes[0] << 0) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) === 1) ||
+            (((bytes[0] << 0) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) === 2)
+        ) {
             return Build.Models.Storage.SSI.Unserialize(bytes);
         }
 
