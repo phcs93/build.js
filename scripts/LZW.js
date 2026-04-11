@@ -1,3 +1,5 @@
+// this code was 100% AI generated based on CACHE1D.C
+
 Build.Scripts.LZW = class LZW {
 
     static size = 16384;
@@ -5,14 +7,12 @@ Build.Scripts.LZW = class LZW {
     static compress(data) {
 
         const uncompleng = data.length;
-
         const lzwbuf1 = new Uint8Array(65536);
-        const lzwbuf2 = new Int32Array(65536);
-        const lzwbuf3 = new Int32Array(65536);
+        const lzwbuf2 = new Int16Array(65536);
+        const lzwbuf3 = new Int16Array(65536);
 
-        const outbuf = new Uint8Array(uncompleng + 4096);
+        const outbuf = new Uint8Array(uncompleng + 4096 + 16);
 
-        // init
         for (let i = 255; i >= 0; i--) {
             lzwbuf1[i] = i;
             lzwbuf3[i] = (i + 1) & 255;
@@ -25,34 +25,42 @@ Build.Scripts.LZW = class LZW {
         let numbits = 8;
         let oneupnumbits = 1 << 8;
 
-        function writeCode(code) {
-            const bytePos = bitcnt >> 3;
-            const shift = bitcnt & 7;
+        const writeCode = (code) => {
 
-            let v =
-                outbuf[bytePos] |
+            let bytePos = bitcnt >> 3;
+            let shift = bitcnt & 7;
+
+            let v = outbuf[bytePos] |
                 (outbuf[bytePos + 1] << 8) |
                 (outbuf[bytePos + 2] << 16) |
-                (outbuf[bytePos + 3] << 24);
+                (outbuf[bytePos + 3] << 24)
+            ;
 
-            v |= (code << shift);
+            v |= code << shift;
 
-            outbuf[bytePos]     = v & 0xFF;
+            outbuf[bytePos] = v & 0xFF;
             outbuf[bytePos + 1] = (v >>> 8) & 0xFF;
             outbuf[bytePos + 2] = (v >>> 16) & 0xFF;
             outbuf[bytePos + 3] = (v >>> 24) & 0xFF;
 
             bitcnt += numbits;
 
-            if ((code & ((oneupnumbits >> 1) - 1)) > ((addrcnt - 1) & ((oneupnumbits >> 1) - 1)))
+            if ((code & ((oneupnumbits >> 1) - 1)) > ((addrcnt - 1) & ((oneupnumbits >> 1) - 1))) {
                 bitcnt--;
-        }
+            }
+
+        };
+
+        let addr = 0;
 
         while (bytecnt1 < uncompleng && bitcnt < (uncompleng << 3)) {
-            let addr = data[bytecnt1];
+
+            addr = data[bytecnt1];
 
             while (true) {
+
                 bytecnt1++;
+
                 if (bytecnt1 === uncompleng) break;
 
                 if (lzwbuf2[addr] < 0) {
@@ -74,6 +82,7 @@ Build.Scripts.LZW = class LZW {
                 if (lzwbuf3[newaddr] === addrcnt) break;
 
                 addr = newaddr;
+
             }
 
             lzwbuf1[addrcnt] = (bytecnt1 < uncompleng) ? data[bytecnt1] : 0;
@@ -83,16 +92,19 @@ Build.Scripts.LZW = class LZW {
             writeCode(addr);
 
             addrcnt++;
+
             if (addrcnt > oneupnumbits) {
                 numbits++;
                 oneupnumbits <<= 1;
             }
+
         }
 
-        writeCode(data[uncompleng - 1]);
+        writeCode(addr);
 
         const dv = new DataView(outbuf.buffer);
-        dv.setUint16(0, uncompleng, true);
+
+        dv.setUint16(0, uncompleng, true); 
 
         const finalLen = (bitcnt + 7) >> 3;
 
@@ -102,18 +114,18 @@ Build.Scripts.LZW = class LZW {
         }
 
         dv.setUint16(2, 0, true);
-
         const out = new Uint8Array(uncompleng + 4);
         out.set(outbuf.slice(0, 4));
         out.set(data, 4);
 
         return out;
+
     }
 
     static uncompress(data) {
 
         const uncompleng = data[0] | (data[1] << 8);
-        const strtot      = data[2] | (data[3] << 8);
+        const strtot = data[2] | (data[3] << 8);
 
         if (strtot === 0) {
             return data.slice(4, 4 + uncompleng);
@@ -128,40 +140,29 @@ Build.Scripts.LZW = class LZW {
             lzwbuf3[i] = i;
         }
 
-        let out = new Uint8Array(uncompleng);
+        const out = new Uint8Array(uncompleng);
         let outbytecnt = 0;
-
         let currstr = 256;
         let bitcnt = 32;
-
         let numbits = 8;
         let oneupnumbits = 1 << 8;
 
-        function readCode() {
+        const readCode = () => {
             const bytePos = bitcnt >> 3;
-            const bitOff  = bitcnt & 7;
-
-            const v =
-                data[bytePos] |
-                (data[bytePos + 1] << 8) |
-                (data[bytePos + 2] << 16) |
-                (data[bytePos + 3] << 24);
-
+            const bitOff = bitcnt & 7;
+            const v = data[bytePos] | (data[bytePos+1]<<8) | (data[bytePos+2]<<16) | (data[bytePos+3]<<24);
             let dat = (v >>> bitOff) & (oneupnumbits - 1);
-
             bitcnt += numbits;
-
-            if ((dat & ((oneupnumbits >> 1) - 1)) > ((currstr - 1) & ((oneupnumbits >> 1) - 1))) {
-                dat &= ((oneupnumbits >> 1) - 1);
+            if ((dat & ((oneupnumbits>>1)-1)) > ((currstr-1) & ((oneupnumbits>>1)-1))) {
+                dat &= ((oneupnumbits>>1)-1);
                 bitcnt--;
             }
-
             return dat;
-        }
+        };
 
         while (currstr < strtot) {
-            let dat = readCode();
 
+            const dat = readCode();
             lzwbuf3[currstr] = dat;
 
             let stackLen = 0;
@@ -180,7 +181,6 @@ Build.Scripts.LZW = class LZW {
 
             lzwbuf2[currstr - 1] = tmp;
             lzwbuf2[currstr] = tmp;
-            //lzwbuf2[currstr] = tmp;
 
             currstr++;
 
@@ -188,10 +188,11 @@ Build.Scripts.LZW = class LZW {
                 numbits++;
                 oneupnumbits <<= 1;
             }
+
         }
 
         return out;
-        
+
     }
 
 }

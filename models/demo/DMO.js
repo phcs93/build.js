@@ -25,7 +25,7 @@ Build.Models.Demo.DMO = class DMO {
         this.Dummy = 0;
         this.Map = "";
         this.AimMode = [];
-        this.WeaponChoice = [];        
+        this.WeaponChoice = [];
     }
 
     static Unserialize(bytes) {
@@ -37,7 +37,7 @@ Build.Models.Demo.DMO = class DMO {
         demo.Inputs = new Array(reader.uint32());
         demo.Version = reader.uint8();
         if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) {
-            demo.GRPVersion = reader.read(4*4);
+            demo.GRPVersion = reader.read(4 * 4);
         }
         demo.Volume = reader.uint8();
         demo.Level = reader.uint8();
@@ -53,7 +53,7 @@ Build.Models.Demo.DMO = class DMO {
         demo.Names = new Array(16);
         for (let i = 0; i < 16; i++) {
             demo.Names[i] = reader.string(32);
-        }        
+        }
         demo.Dummy = reader.int32();
         demo.Map = reader.string(128);
         demo.AimMode = new Array(demo.Players);
@@ -74,7 +74,7 @@ Build.Models.Demo.DMO = class DMO {
 
             const size = Math.min(demo.Inputs.length - i, DMO.RECSYNCBUFSIZ);
             const _reader = new Build.Scripts.ByteReader(reader.kdfread(DMO.InputSize * demo.Players, size / demo.Players));
-            
+
             for (let _i = 0; _i < size; _i++) {
                 demo.Inputs[i++] = {
                     avel: _reader.int8(),
@@ -94,142 +94,115 @@ Build.Models.Demo.DMO = class DMO {
 
     static Serialize(demo) {
 
-        const headerSize =
-            4 +                     // Inputs count (uint32)
-            1 +                     // Version
-            (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version) ? 16 : 0) + // GRPVersion bruto
-            1 + 1 + 1 + 1 + 1 +     // Volume, Level, Skill, Mode, FriendlyFire
-            2 + 2 +                 // Players, Monsters
-            4 + 4 + 4 + 4 +         // RespawnMonsters, RespawnItems, RespawnInventory, BotAI
-            16 * 32 +               // Names[16] (cada 32 bytes)
-            4 +                     // Dummy
-            128 +                   // Map (128 bytes)
-            demo.Players +               // AimMode[Players] (int8)
-            (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version) ? demo.Players * 12 * 4 : 0); // WeaponChoice
-
-        const writer = new Build.Scripts.ByteWriter(
-            headerSize + 
-            (demo.Inputs.length * DMO.InputSize) +
-            (Math.ceil((demo.Inputs.length * DMO.InputSize) / Build.Scripts.LZW.size) *  (4096 + 2))
-        );
-
-        // ----- Cabeçalho -----
-
-        // número de inputs
-        writer.int32(demo.Inputs.length);
-
-        // versão
-        writer.int8(demo.Version | 0);
-
-        // GRPVersion (bruto) só se Version == 119 (XDUKE_19_7)
+        let headerSize = 4 + 1; 
+        if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) headerSize += 16;
+        headerSize += 5;                    
+        headerSize += 4;                    
+        headerSize += 16;                   
+        headerSize += 16 * 32;              
+        headerSize += 4;                    
+        headerSize += 128;                  
+        headerSize += demo.Players;         
         if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) {
-            let grp = demo.GRPVersion;
-            if (!(grp instanceof Uint8Array)) {
-                grp = grp ? Uint8Array.from(grp) : new Uint8Array(16);
-            }
-            if (grp.length !== 16) {
-                grp = grp.slice(0, 16);
-            }
-            writer.write(grp);
+            headerSize += demo.Players * 12 * 4;
         }
 
-        // campos simples
-        writer.int8(demo.Volume | 0);
-        writer.int8(demo.Level | 0);
-        writer.int8(demo.Skill | 0);
-        writer.int8(demo.Mode | 0);
-        writer.int8(demo.FriendlyFire | 0);
+        const headerWriter = new Build.Scripts.ByteWriter(headerSize + 1024);
 
-        writer.int16(demo.Players & 0xFFFF);
-        writer.int16(demo.Monsters & 0xFFFF);
+        headerWriter.int32(demo.Inputs.length);
+        headerWriter.int8(demo.Version | 0);
 
-        writer.int32(demo.RespawnMonsters >>> 0);
-        writer.int32(demo.RespawnItems >>> 0);
-        writer.int32(demo.RespawnInventory >>> 0);
-        writer.int32(demo.BotAI >>> 0);
+        if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) {
+            let grp = demo.GRPVersion || new Uint8Array(16);
+            if (!(grp instanceof Uint8Array)) grp = Uint8Array.from(grp);
+            headerWriter.write(grp.slice(0, 16));
+        }
 
-        // 16 nomes de 32 bytes cada (sempre 16, igual ao constructor)
+        headerWriter.int8(demo.Volume | 0);
+        headerWriter.int8(demo.Level | 0);
+        headerWriter.int8(demo.Skill | 0);
+        headerWriter.int8(demo.Mode | 0);
+        headerWriter.int8(demo.FriendlyFire | 0);
+
+        headerWriter.int16(demo.Players & 0xFFFF);
+        headerWriter.int16(demo.Monsters & 0xFFFF);
+
+        headerWriter.int32(demo.RespawnMonsters >>> 0);
+        headerWriter.int32(demo.RespawnItems >>> 0);
+        headerWriter.int32(demo.RespawnInventory >>> 0);
+        headerWriter.int32(demo.BotAI >>> 0);
+
         for (let i = 0; i < 16; i++) {
-            const name = (demo.Names && demo.Names[i]) ? demo.Names[i] : "";
-            writer.string(name, 32);
+            headerWriter.string((demo.Names && demo.Names[i]) || "", 32);
         }
 
-        // Dummy
-        writer.int32((demo.Dummy | 0));
+        headerWriter.int32(demo.Dummy | 0);
+        headerWriter.string(demo.Map || "", 128);
 
-        // Map (128 bytes, padded com '\0')
-        writer.string(demo.Map || "", 128);
-
-        // AimMode[Players]
         for (let i = 0; i < demo.Players; i++) {
-            const v = (demo.AimMode && demo.AimMode[i] != null) ? demo.AimMode[i] : 0;
-            writer.int8(v | 0);
+            headerWriter.int8((demo.AimMode && demo.AimMode[i] != null) ? (demo.AimMode[i] | 0) : 0);
         }
 
-        // WeaponChoice[Players][12] se Version == 119
         if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) {
             for (let i = 0; i < demo.Players; i++) {
-                const wcRow = (demo.WeaponChoice && demo.WeaponChoice[i]) || [];
+                const row = (demo.WeaponChoice && demo.WeaponChoice[i]) || new Array(12).fill(0);
                 for (let w = 0; w < 12; w++) {
-                    const val = wcRow[w] != null ? wcRow[w] : 0;
-                    writer.int32(val >>> 0);
+                    headerWriter.int32((row[w] != null ? row[w] : 0) >>> 0);
                 }
             }
         }
 
-        // ----- Inputs comprimidos (dfwrite inverso do kdfread) -----
+        const chunks = [headerWriter.bytes.subarray(0, headerWriter.index)];
 
         if (demo.Inputs.length > 0 && demo.Players > 0) {
+            let pos = 0;
 
-            let i = 0;
+            while (pos < demo.Inputs.length) {
+                let count = Math.min(demo.Inputs.length - pos, DMO.RECSYNCBUFSIZ);
+                count = Math.floor(count / demo.Players) * demo.Players;
+                if (count <= 0) break;
 
-            while (i < demo.Inputs.length) {
-
-                const size = Math.min(demo.Inputs.length - i, DMO.RECSYNCBUFSIZ);
-
-                // buffer descomprimido para este bloco: size * 10 bytes
-                const buf = new Uint8Array(size * 10);
+                const buf = new Uint8Array(count * DMO.InputSize);
                 let off = 0;
 
-                for (let _i = 0; _i < size; _i++) {
-                    const input = demo.Inputs[i + _i] || {};
+                for (let j = 0; j < count; j++) {
+                    const inp = demo.Inputs[pos + j] || {};
 
-                    const avel = (input.avel | 0);
-                    const horz = (input.horz | 0);
-                    const fvel = (input.fvel | 0);
-                    const svel = (input.svel | 0);
-                    const bits = (input.bits >>> 0);
+                    buf[off++] = (inp.avel | 0) & 0xFF;
+                    buf[off++] = (inp.horz | 0) & 0xFF;
 
-                    // int8 avel
-                    buf[off++] = avel & 0xFF;
-                    // int8 horz
-                    buf[off++] = horz & 0xFF;
+                    let v = inp.fvel | 0;
+                    buf[off++] = v & 0xFF;
+                    buf[off++] = (v >> 8) & 0xFF;
 
-                    // int16 fvel (little-endian)
-                    buf[off++] = fvel & 0xFF;
-                    buf[off++] = (fvel >> 8) & 0xFF;
+                    v = inp.svel | 0;
+                    buf[off++] = v & 0xFF;
+                    buf[off++] = (v >> 8) & 0xFF;
 
-                    // int16 svel (little-endian)
-                    buf[off++] = svel & 0xFF;
-                    buf[off++] = (svel >> 8) & 0xFF;
-
-                    // uint32 bits (little-endian)
-                    buf[off++] = bits & 0xFF;
-                    buf[off++] = (bits >> 8) & 0xFF;
-                    buf[off++] = (bits >> 16) & 0xFF;
-                    buf[off++] = (bits >> 24) & 0xFF;
+                    v = inp.bits >>> 0;
+                    buf[off++] = v & 0xFF;
+                    buf[off++] = (v >> 8) & 0xFF;
+                    buf[off++] = (v >> 16) & 0xFF;
+                    buf[off++] = (v >> 24) & 0xFF;
                 }
 
-                // Mesmos parâmetros do kdfread no constructor:
-                //   kdfread(10 * demo.Players, size / demo.Players)
-                writer.dfwrite(buf, 10 * demo.Players, size / demo.Players);
+                const tempWriter = new Build.Scripts.ByteWriter(65536);
+                tempWriter.dfwrite(buf, DMO.InputSize * demo.Players, count / demo.Players);
+                chunks.push(tempWriter.bytes.subarray(0, tempWriter.index));
 
-                i += size;
+                pos += count;
             }
         }
 
-        // Retorna apenas a parte usada do buffer
-        return writer.bytes.subarray(0, writer.index);
+        const totalLength = chunks.reduce((sum, c) => sum + c.length, 0);
+        const result = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const chunk of chunks) {
+            result.set(chunk, offset);
+            offset += chunk.length;
+        }
+
+        return result;
 
     }
 
