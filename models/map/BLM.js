@@ -62,7 +62,7 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
     static Unserialize (bytes) {
 
         // create empty map object
-        const map = new BLM();
+        const map = new Build.Models.Map.BLM();
 
         // create byte reader
         const reader = new Build.Scripts.ByteReader(bytes);

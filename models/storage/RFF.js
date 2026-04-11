@@ -43,7 +43,7 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
     static Unserialize (bytes) {
 
         // create empty rff object
-        const rff = new RFF();
+        const rff = new Build.Models.Storage.RFF();
 
         // create byte reader
         const reader = new Build.Scripts.ByteReader(bytes);

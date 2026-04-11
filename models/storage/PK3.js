@@ -10,7 +10,7 @@ Build.Models.Storage.PK3 = class PK3 extends Build.Models.Storage {
     static Unserialize (bytes) {
 
         // create empty pk3 object
-        const pk3 = new PK3();
+        const pk3 = new Build.Models.Storage.PK3();
 
         // create byte reader
         const reader = new Build.Scripts.ByteReader(bytes);

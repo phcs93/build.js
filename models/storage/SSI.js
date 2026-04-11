@@ -14,7 +14,7 @@ Build.Models.Storage.SSI = class SSI extends Build.Models.Storage {
     static Unserialize(bytes) {
 
         // create empty ssi object
-        const ssi = new SSI();
+        const ssi = new Build.Models.Storage.SSI();
 
         // create byte reader
         const reader = new Build.Scripts.ByteReader(bytes);

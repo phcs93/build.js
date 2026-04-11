@@ -180,6 +180,7 @@ Build.Scripts.LZW = class LZW {
 
             lzwbuf2[currstr - 1] = tmp;
             lzwbuf2[currstr] = tmp;
+            //lzwbuf2[currstr] = tmp;
 
             currstr++;
 

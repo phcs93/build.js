@@ -4,8 +4,8 @@ Build.Models.Map = class Map {
     constructor(type) {
         if (type) {
             switch (type) {
-                case Build.Enums.MapType.DNM: return new DNM();
-                case Build.Enums.MapType.BLM: return new BLM();
+                case Build.Enums.MapType.DNM: return new Build.Models.Map.DNM();
+                case Build.Enums.MapType.BLM: return new Build.Models.Map.BLM();
             }
         }  
     }

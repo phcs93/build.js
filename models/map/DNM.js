@@ -20,7 +20,7 @@ Build.Models.Map.DNM = class DNM extends Build.Models.Map {
 
     static Unserialize (bytes) {
 
-        const map = new DNM(0);
+        const map = new Build.Models.Map.DNM(0);
         
         const reader = new Build.Scripts.ByteReader(bytes);
 

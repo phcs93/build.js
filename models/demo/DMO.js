@@ -8,7 +8,7 @@ Build.Models.Demo.DMO = class DMO {
         this.Inputs = [];
         this.Version = version;
         if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(this.Version)) {
-            this.GRPVersion = [0,0,0,0];
+            this.GRPVersion = new Uint8Array(16);
         }
         this.Volume = 0;
         this.Level = 0;
@@ -30,7 +30,7 @@ Build.Models.Demo.DMO = class DMO {
 
     static Unserialize(bytes) {
 
-        const demo = new DMO();
+        const demo = new Build.Models.Demo.DMO();
 
         const reader = new Build.Scripts.ByteReader(bytes);
 
@@ -50,7 +50,7 @@ Build.Models.Demo.DMO = class DMO {
         demo.RespawnItems = reader.uint32();
         demo.RespawnInventory = reader.uint32();
         demo.BotAI = reader.uint32();
-        demo.Names = new Array(demo.Players);
+        demo.Names = new Array(16);
         for (let i = 0; i < 16; i++) {
             demo.Names[i] = reader.string(32);
         }        

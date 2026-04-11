@@ -706,5 +706,11 @@
 	"art": {
 		"path": "TILES000.ART",
 		"expected-tiles": 256
+	},
+	"palette": {
+		"path": "PALETTE.DAT",
+		"expected-colors": 256,
+		"expected-shades": 32,
+		"expected-translucency": 256
 	}
 }

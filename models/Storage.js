@@ -4,10 +4,10 @@ Build.Models.Storage = class Storage {
     constructor (type) {
         if (type) {
             switch (type) {
-                case Build.Enums.StorageType.GRP: return new GRP();
-                case Build.Enums.StorageType.PK3: return new PK3();
-                case Build.Enums.StorageType.RFF: return new RFF();
-                case Build.Enums.StorageType.SSI: return new SSI();
+                case Build.Enums.StorageType.GRP: return new Build.Models.Storage.GRP();
+                case Build.Enums.StorageType.PK3: return new Build.Models.Storage.PK3();
+                case Build.Enums.StorageType.RFF: return new Build.Models.Storage.RFF();
+                case Build.Enums.StorageType.SSI: return new Build.Models.Storage.SSI();
             }
         }        
     }

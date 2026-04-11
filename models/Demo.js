@@ -4,7 +4,7 @@ Build.Models.Demo = class Demo {
     constructor(type) {
         if (type) {
             switch (type) {
-                case Build.Enums.DemoType.DMO: return new DMO();
+                case Build.Enums.DemoType.DMO: return new Build.Models.Demo.DMO();
             }
         }  
     }

@@ -16,7 +16,7 @@ Build.Models.Storage.GRP = class GRP extends Build.Models.Storage {
     static Unserialize (bytes) {
 
         // create empty grp object
-        const grp = new GRP();
+        const grp = new Build.Models.Storage.GRP();
 
         // create byte reader
         const reader = new Build.Scripts.ByteReader(bytes);
