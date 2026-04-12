@@ -54,8 +54,10 @@ Build.Models.Demo.DMO = class DMO {
         for (let i = 0; i < 16; i++) {
             demo.Names[i] = reader.string(32);
         }
-        demo.Dummy = reader.int32();
-        demo.Map = reader.string(128);
+        if (demo.Version !== Build.Enums.ByteVersion.REDNUKEM_RRRA) {
+            demo.Dummy = reader.int32();
+            demo.Map = reader.string(128);
+        }
         demo.AimMode = new Array(demo.Players);
         demo.WeaponChoice = new Array(demo.Players);
         for (let i = 0; i < demo.Players; i++) {
@@ -99,9 +101,11 @@ Build.Models.Demo.DMO = class DMO {
         headerSize += 5;                    
         headerSize += 4;                    
         headerSize += 16;                   
-        headerSize += 16 * 32;              
-        headerSize += 4;                    
-        headerSize += 128;                  
+        headerSize += 16 * 32;     
+        if (demo.Version !== Build.Enums.ByteVersion.REDNUKEM_RRRA) {   
+            headerSize += 4;                    
+            headerSize += 128;                  
+        }
         headerSize += demo.Players;         
         if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) {
             headerSize += demo.Players * 12 * 4;
@@ -136,8 +140,10 @@ Build.Models.Demo.DMO = class DMO {
             headerWriter.string((demo.Names && demo.Names[i]) || "", 32);
         }
 
-        headerWriter.int32(demo.Dummy | 0);
-        headerWriter.string(demo.Map || "", 128);
+        if (demo.Version !== Build.Enums.ByteVersion.REDNUKEM_RRRA) {
+            headerWriter.int32(demo.Dummy | 0);
+            headerWriter.string(demo.Map || "", 128);
+        }
 
         for (let i = 0; i < demo.Players; i++) {
             headerWriter.int8((demo.AimMode && demo.AimMode[i] != null) ? (demo.AimMode[i] | 0) : 0);

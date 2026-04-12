@@ -80,7 +80,7 @@ Build.Models.Art = class Art {
         );
 
         writer.int32(art.Version);
-        writer.int32(art.End - art.Start + 1);
+        writer.int32(art.Length);
         writer.int32(art.Start);
         writer.int32(art.End);
         

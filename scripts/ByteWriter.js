@@ -12,7 +12,7 @@ Build.Scripts.ByteWriter = class ByteWriter {
     int32(v) { this.write([v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF]); }
     string(string, length) { this.write([...string.padEnd(length, "\0").slice(0, length)].map(c => c.charCodeAt(0))); }
 
-    // by chatgpt (based on dfread from build engine code itself)
+    // by chatgpt (based on dfwrite from build engine code itself)
     dfwrite(buffer, dasizeof, count) {
 
         if (!buffer || count <= 0) return;

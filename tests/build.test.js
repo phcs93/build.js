@@ -26,16 +26,25 @@ for (const game of games) {
             // create a unit test for each scenario defintion
             test(scenario, () => {
 
-                // each scenario is conveniently named after the corredponding model
-                // so we can get the model class from the Build.Models object
-                // get bytes of file in storage path
-                const bytes = scenario === "storage" ? storageBytes : storage.Files.filter(f => f.name === json[scenario].path)[0].bytes;
+                // each scenario is coveniently named after the model it is testing
+                const modelName = capitalize(scenario)
+
+                // bytes of file to be tested
+                let bytes = null;
+                
+                if (scenario === "storage") { // if scenario is "storage", we want to test the storage file itself
+                    bytes = storageBytes;
+                } else if (json[scenario].path.indexOf(":") !== -1) { // if path is from disk, get bytes from disk
+                    bytes = fs.readFileSync(json[scenario].path);
+                } else { // otherwise get bytes from storage instance
+                    bytes = storage.Files.filter(f => f.name === json[scenario].path)[0].bytes;
+                }                
 
                 // deserialize bytes into instance
-                const instance = Build.Models[capitalize(scenario)].Unserialize(bytes);
+                const instance = Build.Models[modelName].Unserialize(bytes);
                 
                 // first check if instance can be serialized back to the same bytes
-                const serialized = Build.Models[capitalize(scenario)].Serialize(instance);
+                const serialized = Build.Models[modelName].Serialize(instance);
                 assert.ok(Buffer.from(serialized).equals(Buffer.from(bytes)));
 
             });
