@@ -1,12 +1,53 @@
 Build.Scripts.ByteWriter = class ByteWriter {
-    
-    constructor(length) {
-        this.bytes = new Uint8Array(length);
-        this.index = 0;
+
+    // private attributes
+    #bytes = new Uint8Array(1024);
+    #index = 0;
+
+    // getters here to protect bytes and index from being modified from the outside
+    get bytes() { return this.#bytes.slice(0, this.#index); }
+    get index() { return this.#index; }
+
+    // this function ensures that the internal byte array has necessary size
+    #ensure(incoming) {
+
+        // if incoming bytes fit in the array -> do nothing
+        if (this.#index + incoming <= this.#bytes.length) return;
+
+        // set variable to calculate new size
+        let capacity = this.#bytes.length;
+
+        // while capacity can't fit incoming bytes
+        while (capacity < this.#index + incoming) {
+
+            // double the capacity
+            capacity *= 2;
+
+        }
+
+        // create new buffer array
+        const bytes = new Uint8Array(capacity);
+
+        // copy only used bytes from old buffer
+        bytes.set(this.#bytes.subarray(0, this.#index), 0);
+
+        // set new buffer
+        this.#bytes = bytes;
+
     }
 
-    // using .set is incredibly fast and necessary otherwise we would get a stack overflow
-    write(bytes) { this.bytes.set(bytes, this.index); this.index += bytes.length; }
+    // write incoming bytes to internal buffer
+    write(bytes) {
+
+        // ensure internal buffer size
+        this.#ensure(bytes.length);
+
+        // using .set is incredibly fast and necessary otherwise we would get a stack overflow
+        this.#bytes.set(bytes, this.#index); this.#index += bytes.length;
+
+    }
+
+    // type helpers
     int8(v) { this.write([v & 0xFF]); }
     int16(v) { this.write([v & 0xFF, (v >> 8) & 0xFF]); }
     int32(v) { this.write([v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF]); }

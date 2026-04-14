@@ -318,19 +318,7 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
     static Serialize (map) {
 
         // create byte writer
-        const writer = new Build.Scripts.ByteWriter(
-            4 + // signature
-            2 + // version
-            BLM.HeaderSize +
-            BLM.ExtraHeaderSize +
-            map.SkyOffsets.length * 2 +
-            map.Sectors.length * BLM.SectorSize +
-            map.Sectors.filter(s => s.extra > 0).length * (map.byte1A76C8 ? map.XSectorSize : BLM.XSectorSize) +
-            map.Walls.length * BLM.WallSize +
-            map.Walls.filter(w => w.extra > 0).length * (map.byte1A76C8 ? map.XWallSize : BLM.XWallSize) +
-            map.Sprites.length * BLM.SpriteSize +
-            map.Sprites.filter(s => s.extra > 0).length * (map.byte1A76C8 ? map.XSpriteSize : BLM.XSpriteSize)
-        );
+        const writer = new Build.Scripts.ByteWriter();
 
         // write BLM\x1a signature
         writer.string(map.Signature, 4);
@@ -338,8 +326,11 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
         // write map version
         writer.int16(map.Version);
 
+        // create buffer for header bytes
+        let headerBytes = [];
+
         // create header writer
-        const headerWriter = new Build.Scripts.ByteWriter(BLM.HeaderSize);
+        const headerWriter = new Build.Scripts.ByteWriter();
 
         // write map header bytes to local writer
         headerWriter.int32(map.X);
@@ -360,16 +351,21 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
         if (map.byte1A76C7) {
 
             // encrypt header bytes
-            headerWriter.bytes = BLM.encrypt(headerWriter.bytes, BLM.NewKey);
+            headerBytes = BLM.encrypt(headerWriter.bytes, BLM.NewKey);
+
+        } else {
+
+            // just copy bytes
+            headerBytes = headerWriter.bytes;
 
         }
 
         // write header bytes
-        writer.write(headerWriter.bytes);
+        writer.write(headerBytes);
 
         // write extra flags header
         if (map.byte1A76C8) {
-            const extraWriter = new Build.Scripts.ByteWriter(BLM.ExtraHeaderSize);
+            const extraWriter = new Build.Scripts.ByteWriter();
             extraWriter.write(map.XPadStart); // 64
             extraWriter.int32(map.XSectorSize);
             extraWriter.int32(map.XWallSize);
@@ -378,8 +374,11 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             writer.write(BLM.encrypt(extraWriter.bytes, map.Walls.length));
         }
 
+        // create buffer from sky bytes
+        let skyBytes = [];
+
         // create sky writer
-        const skyWriter = new Build.Scripts.ByteWriter(map.SkyOffsets.length * 2);
+        const skyWriter = new Build.Scripts.ByteWriter();
 
         // write sky bytes to local writer
         for (let i = 0; i < map.SkyOffsets.length; i++) {
@@ -389,18 +388,25 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
         // check if sky bytes needs to be encrypted
         if (map.byte1A76C8) {
 
-            // decrypt sky bytes
-            skyWriter.bytes = BLM.encrypt(skyWriter.bytes, map.SkyOffsets.length * 2);
+            // encrypt sky bytes
+            skyBytes = BLM.encrypt(skyWriter.bytes, map.SkyOffsets.length * 2);
+
+        } else {
+
+            // just copy bytes
+            skyBytes = writer.bytes;
 
         }
 
         // write sky bytes
-        writer.write(skyWriter.bytes);
+        writer.write(skyBytes);
 
         // write sectors
         for (let i = 0; i < map.Sectors.length; i++) {
 
-            const sectorWriter = new Build.Scripts.ByteWriter(BLM.SectorSize);
+            let sectorBytes = [];
+
+            const sectorWriter = new Build.Scripts.ByteWriter();
 
             // write sector struct
             sectorWriter.int16(map.Sectors[i].wallptr);
@@ -439,19 +445,26 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             if (map.byte1A76C8) {
 
                 // encrypt sector bytes
-                sectorWriter.bytes = BLM.encrypt(sectorWriter.bytes, map.Revision * BLM.SectorSize);
+                sectorBytes = BLM.encrypt(sectorWriter.bytes, map.Revision * BLM.SectorSize);
+
+            } else {
+
+                // just copy bytes
+                sectorBytes = sectorWriter.bytes;
 
             }
 
             // write sector bytes
-            writer.write(sectorWriter.bytes);
+            writer.write(sectorBytes);
 
         }
 
         // write walls
         for (let i = 0; i < map.Walls.length; i++) {
 
-            const wallWriter = new Build.Scripts.ByteWriter(BLM.WallSize);
+            let wallBytes = [];
+
+            const wallWriter = new Build.Scripts.ByteWriter();
 
             // write wall struct
             wallWriter.int32(map.Walls[i].x);
@@ -484,19 +497,26 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             if (map.byte1A76C8) {
 
                 // encrypt wall bytes
-                wallWriter.bytes = BLM.encrypt(wallWriter.bytes, map.Revision * BLM.WallSize);
+                wallBytes = BLM.encrypt(wallWriter.bytes, map.Revision * BLM.WallSize);
+
+            } else {
+
+                // just copy bytes
+                wallBytes = wallWriter.bytes;
 
             }
 
             // write wall bytes
-            writer.write(wallWriter.bytes);
+            writer.write(wallBytes);
 
         }
 
         // write sprites
         for (let i = 0; i < map.Sprites.length; i++) {
 
-            const spriteWriter = new Build.Scripts.ByteWriter(BLM.SpriteSize);
+            let spriteBytes = [];
+
+            const spriteWriter = new Build.Scripts.ByteWriter();
 
             // write sprite struct
             spriteWriter.int32(map.Sprites[i].x);
@@ -535,12 +555,17 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             if (map.byte1A76C8) {
 
                 // encrypt sprite bytes
-                spriteWriter.bytes = BLM.encrypt(spriteWriter.bytes, map.Revision * BLM.SpriteSize);
+                spriteBytes = BLM.encrypt(spriteWriter.bytes, map.Revision * BLM.SpriteSize);
+
+            } else {
+
+                // just copy bytes
+                spriteBytes = spriteWriter.bytes;
 
             }
 
             // write sprite bytes
-            writer.write(spriteWriter.bytes);
+            writer.write(spriteBytes);
 
         }
         

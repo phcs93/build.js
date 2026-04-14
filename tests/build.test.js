@@ -38,7 +38,7 @@ for (const game of games) {
                     bytes = fs.readFileSync(json[scenario].path);
                 } else { // otherwise get bytes from storage instance
                     bytes = storage.Files.filter(f => f.name === json[scenario].path)[0].bytes;
-                }                
+                }
 
                 // deserialize bytes into instance
                 const instance = Build.Models[modelName].Unserialize(bytes);

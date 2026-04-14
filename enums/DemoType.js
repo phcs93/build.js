@@ -1,3 +1,4 @@
 Build.Enums.DemoType = {
-    DMO: "DMO"
+    DMO: "DMO",
+    VSW: "VSW"
 }

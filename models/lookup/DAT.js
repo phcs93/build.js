@@ -41,11 +41,7 @@ Build.Models.Lookup.DAT = class DAT {
 
     static Serialize(dat) {
 
-        const writer = new Build.Scripts.ByteWriter(
-            (1) +
-            (dat.Swaps.length * (1 + 256)) +
-            (dat.AlternativePalettes.length * 256 * 3)
-        );
+        const writer = new Build.Scripts.ByteWriter();
 
         writer.int8(dat.Swaps.length);
 

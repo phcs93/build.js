@@ -43,13 +43,7 @@ Build.Models.Palette.DAT = class DAT {
 
     static Serialize(dat) {
 
-        const writer = new Build.Scripts.ByteWriter(
-            (dat.Colors.length * 3) +
-            (2) + 
-            (dat.Shades.length * 256) +
-            (dat.Translucency.length * 256) +
-            (dat.Garbage ? dat.Garbage.length * 256 : 0)
-        );
+        const writer = new Build.Scripts.ByteWriter();
 
         for (const color of dat.Colors) {
             // scale from 0...256 to 0...64 (DOS limitation)

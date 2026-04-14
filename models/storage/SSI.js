@@ -76,20 +76,7 @@ Build.Models.Storage.SSI = class SSI extends Build.Models.Storage {
     static Serialize(ssi) {
 
         // create byte writer
-        const writer = new Build.Scripts.ByteWriter(4 +
-            4 +
-            1 +
-            32 +
-            (ssi.Version === 2 ? 1 + 12 : 0) + 
-            1 + 
-            70 +
-            1 + 
-            70 + 
-            1 + 
-            70 + 
-            ssi.Files.length * (1+12+4+34+1+69) + 
-            ssi.Files.reduce((sum, f) => sum + f.bytes.length, 0)
-        );
+        const writer = new Build.Scripts.ByteWriter();
 
         // write version
         writer.int32(ssi.Version);

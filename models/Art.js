@@ -68,16 +68,7 @@ Build.Models.Art = class Art {
 
         const numtiles = art.End - art.Start + 1
 
-        const writer = new Build.Scripts.ByteWriter(
-            4 + // version
-            4 + // length (numtiles)
-            4 + // start
-            4 + // end
-            numtiles * 2 + // sizex
-            numtiles * 2 + // sizey
-            numtiles * 4 + // animations
-            art.Tiles.reduce((a, t) => a + (t.pixels && t.pixels.length > 0 ? t.pixels.length * t.pixels[0].length : 0), 0) * 1 // pixels
-        );
+        const writer = new Build.Scripts.ByteWriter();
 
         writer.int32(art.Version);
         writer.int32(art.Length);

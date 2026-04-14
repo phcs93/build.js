@@ -84,8 +84,8 @@ Build.Models.Storage.PK3 = class PK3 extends Build.Models.Storage {
 
         writerLength += centralDirLength + 22;
 
-        const writer = new Build.Scripts.ByteWriter(writerLength);
-        const centralDirectory = new Build.Scripts.ByteWriter(centralDirLength);
+        const writer = new Build.Scripts.ByteWriter();
+        const centralDirectory = new Build.Scripts.ByteWriter();
 
         const localOffsets = [];
         let offset = 0;

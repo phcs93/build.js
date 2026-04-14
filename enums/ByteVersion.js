@@ -19,7 +19,7 @@ Build.Enums.ByteVersion = {
     HDUKE_TDM             : 253,
     HDUKE_FORTS           : 254,
     PRODUKE               : 150,
-    VOIDSW                : 101, // voidsw shadow warrior
+    //VOIDSW                : 101, // voidsw shadow warrior
     REDNUKEM_RRRA         : 108, // rednukem redneck rampage rides again
     XDUKE_19_7_OR_HDUKE: (version) => {
         return [

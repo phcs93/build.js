@@ -50,11 +50,7 @@ Build.Models.Storage.GRP = class GRP extends Build.Models.Storage {
     static Serialize (grp) {
 
         // create byte writer
-        const writer = new Build.Scripts.ByteWriter(
-            GRP.HeaderSize + 
-            grp.Files.length * GRP.FileHeaderSize + 
-            grp.Files.reduce((sum, f) => sum + f.bytes.length, 0)
-        );
+        const writer = new Build.Scripts.ByteWriter();
 
         // write ken silverman string
         writer.string(grp.Signature, 12);

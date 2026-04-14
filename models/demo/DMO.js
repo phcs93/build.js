@@ -111,7 +111,7 @@ Build.Models.Demo.DMO = class DMO {
             headerSize += demo.Players * 12 * 4;
         }
 
-        const headerWriter = new Build.Scripts.ByteWriter(headerSize + 1024);
+        const headerWriter = new Build.Scripts.ByteWriter();
 
         headerWriter.int32(demo.Inputs.length);
         headerWriter.int8(demo.Version | 0);
@@ -192,7 +192,7 @@ Build.Models.Demo.DMO = class DMO {
                     buf[off++] = (v >> 24) & 0xFF;
                 }
 
-                const tempWriter = new Build.Scripts.ByteWriter(65536);
+                const tempWriter = new Build.Scripts.ByteWriter();
                 tempWriter.dfwrite(buf, DMO.InputSize * demo.Players, count / demo.Players);
                 chunks.push(tempWriter.bytes.subarray(0, tempWriter.index));
 

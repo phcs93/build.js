@@ -124,11 +124,7 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
         }
 
         // create byte writer
-        const writer = new Build.Scripts.ByteWriter(
-            RFF.HeaderSize + 
-            rff.Files.reduce((sum, f) => sum += f.size , 0) + 
-            rff.Files.length * RFF.FileHeaderSize
-        );
+        const writer = new Build.Scripts.ByteWriter();
 
         // write RFF\x1A signature
         writer.string(rff.Signature, 4);
@@ -162,7 +158,7 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
         }
 
         // create file header writer
-        const fileHeaderWriter = new Build.Scripts.ByteWriter(rff.Files.length * RFF.FileHeaderSize);
+        const fileHeaderWriter = new Build.Scripts.ByteWriter();
 
         // write files headers
         for (let i = 0; i < rff.Files.length; i++) {

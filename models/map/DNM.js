@@ -121,17 +121,7 @@ Build.Models.Map.DNM = class DNM extends Build.Models.Map {
 
     static Serialize (map) {
 
-        const writer = new Build.Scripts.ByteWriter(
-            4 + // version
-            4 + // x
-            4 + // y
-            4 + // z
-            2 + // a
-            2 + // s
-            2 + map.Sectors.length * DNM.SectorSize + // numsectors + sectors
-            2 + map.Walls.length * DNM.WallSize + // numwalls + walls
-            2 + map.Sprites.length * DNM.SpriteSize // numsprites + sprites
-        );
+        const writer = new Build.Scripts.ByteWriter();
 
         writer.int32(map.Version);
         writer.int32(map.X);
