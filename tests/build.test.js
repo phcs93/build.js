@@ -42,6 +42,10 @@ for (const game of games) {
 
                 // deserialize bytes into instance
                 const instance = Build.Models[modelName].Unserialize(bytes);
+
+                if (scenario == "demo") {
+                    console.log(instance);
+                }
                 
                 // first check if instance can be serialized back to the same bytes
                 const serialized = Build.Models[modelName].Serialize(instance);

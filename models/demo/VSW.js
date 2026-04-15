@@ -29,7 +29,6 @@ Build.Models.Demo.VSW = class VSW {
     }
 
     static Unserialize(bytes) {
-
         const vsw = new Build.Models.Demo.VSW();
         const reader = new Build.Scripts.ByteReader(bytes);
         vsw.Map = reader.string(16);
@@ -44,10 +43,9 @@ Build.Models.Demo.VSW = class VSW {
                 z: reader.int32(),
                 flags: reader.int32(),
                 ang: reader.int16()
-            }
+            };
         }
         vsw.Skill = reader.uint16();
-
         vsw.Net = {
             KillLimit: reader.uint32(),
             TimeLimit: reader.uint32(),
@@ -59,23 +57,68 @@ Build.Models.Demo.VSW = class VSW {
             AutoAim: reader.uint8(),
             NoRespawn: reader.uint8(),
             Nuke: reader.uint8()
+        };
+        
+        vsw.Inputs = [];
+
+        while ((bytes.length - reader.index) >= 12) {
+        //while (true) {
+
+            const input = {
+                vel: reader.int16(),
+                svel: reader.int16(),
+                angvel: reader.int16(),
+                aimvel: reader.int16(),
+                bits: reader.uint32()
+            };
+
+            vsw.Inputs.push(input);
+
+            if (input.bits === 0xFFFFFFFF) { // -1
+                break;
+            }
+
         }
+
+        console.log("index = ", reader.index, "length = ", bytes.length);
 
         return vsw;
 
     }
 
     static Serialize(vsw) {
-
         const writer = new Build.Scripts.ByteWriter();
         writer.string(vsw.Map, 16);
         writer.int8(vsw.Players.length);
         writer.int8(vsw.Episode);
         writer.int8(vsw.Level);
         writer.string(vsw.Song, 16);
-
+        for (let i = 0; i < vsw.Players.length; i++) {
+            writer.int32(vsw.Players[i].x);
+            writer.int32(vsw.Players[i].y);
+            writer.int32(vsw.Players[i].z);
+            writer.int32(vsw.Players[i].flags);
+            writer.int16(vsw.Players[i].ang);
+        }
+        writer.int16(vsw.Skill);
+        writer.int32(vsw.KillLimit);
+        writer.int32(vsw.TimeLimit);
+        writer.int32(vsw.TimeLimitClock);
+        writer.int16(vsw.MultiGameType);
+        writer.int8(vsw.TeamPlay);
+        writer.int8(vsw.HurtTeammate);
+        writer.int8(vsw.SpawnMarkers);
+        writer.int8(vsw.AutoAim);
+        writer.int8(vsw.NoRespawn);
+        writer.int8(vsw.Nuke);
+        for (const input of vsw.Inputs) {
+            writer.int16(input.vel);
+            writer.int16(input.svel);
+            writer.int16(input.angvel);
+            writer.int16(input.aimvel);
+            writer.int32(input.bits);
+        }
         return writer.bytes;
-
     }
 
 }
