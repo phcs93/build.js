@@ -7,13 +7,14 @@ Build.Scripts.ByteReader = class ByteReader {
 
     shift(n) { return this.bytes[this.index++] << n; }
     int8() { return (this.shift(0) << 24) >> 24; }
-    int16() { return this.shift(0) | this.shift(8); }
+    int16() { return (this.shift(0) | this.shift(8)) << 16 >> 16; }
     int32() { return this.shift(0) | this.shift(8) | this.shift(16) | this.shift(24); }
-    uint8() { return this.int8() & 0xFF; }
+    uint8()  { return this.int8() & 0xFF; }
     uint16() { return this.int16() & 0xFFFF; }
-    uint32() { return this.int32() & 0xFFFFFFFF; }
+    uint32() { return this.int32() >>> 0; }
 
-    string(length) { return new Array(length).fill(0).map(() => String.fromCharCode(this.bytes[this.index++])).join("").replace(/\x00/g, ""); }
+    // it's important that we don't discard null bytes (\0) so we preserve even the "garbage" from the buffer
+    string(length) { return new Array(length).fill(0).map(() => String.fromCharCode(this.bytes[this.index++])).join(""); }
 
     read(length) { return this.bytes.slice(this.index, this.index += length); }
 

@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const Build = require("../build.js");
 
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);
+const str = s => s.split("\x00")[0];
 
 const games = fs.readdirSync("./tests/games").map(f => f.split(".")[0]);
 
@@ -37,15 +38,11 @@ for (const game of games) {
                 } else if (json[scenario].path.indexOf(":") !== -1) { // if path is from disk, get bytes from disk
                     bytes = fs.readFileSync(json[scenario].path);
                 } else { // otherwise get bytes from storage instance
-                    bytes = storage.Files.filter(f => f.name === json[scenario].path)[0].bytes;
+                    bytes = storage.Files.filter(f => str(f.name) === json[scenario].path)[0].bytes;
                 }
 
                 // deserialize bytes into instance
                 const instance = Build.Models[modelName].Unserialize(bytes);
-
-                if (scenario == "demo") {
-                    console.log(instance);
-                }
                 
                 // first check if instance can be serialized back to the same bytes
                 const serialized = Build.Models[modelName].Serialize(instance);
