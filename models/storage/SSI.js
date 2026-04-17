@@ -26,43 +26,41 @@ Build.Models.Storage.SSI = class SSI extends Build.Models.Storage {
         ssi.Files = new Array(reader.uint32());
 
         // title
-        const numcharsTitle = reader.uint8();
-        ssi.Title = reader.string(32).slice(0, numcharsTitle);
+        ssi.Title = {
+            length: reader.uint8(),
+            text: reader.string(32)
+        };
 
         // runfile
         if (ssi.Version === 2) {
-            const numcharsRunFile = reader.uint8();
-            ssi.RunFile = reader.string(12).slice(0, numcharsRunFile);
+            ssi.RunFile = {
+                length: reader.uint8(),
+                text: reader.string(12)
+            };
         }
 
         // description
         ssi.Description = [];
 
         for (let i = 0; i < 3; i++) {
-            const numcharsDescription = reader.uint8();
-            ssi.Description[i] = reader.string(70).slice(0, numcharsDescription);
+            ssi.Description[i] = {
+                length: reader.uint8(),
+                text: reader.string(70)
+            };
         }
 
-        // read file names and sizes
+        // file names and sizes
         for (let i = 0; i < ssi.Files.length; i++) {
-            const numchars = reader.uint8();            
-            const originalFileName = reader.string(12).slice(0, numchars);
-            const fileName = originalFileName.split(".")[0];
-            let fileExtension = originalFileName.split(".")[1];
-            if (ssi.Version === 2) {
-                if (fileExtension.toUpperCase() !== "MAP") {
-                    fileExtension = fileExtension.split("").reverse().join("");
-                }
-            }
             ssi.Files[i] = {
-                name: `${fileName}.${fileExtension}`,
+                length: reader.uint8(),
+                name: reader.string(12),
                 size: reader.uint32(),
                 fill: reader.read(34+1+69), // unknown
                 bytes: null
             }
         }
 
-        // read file bytes
+        // file bytes
         for (let i = 0; i < ssi.Files.length; i++) {
             ssi.Files[i].bytes = reader.read(ssi.Files[i].size);
         }
@@ -78,41 +76,34 @@ Build.Models.Storage.SSI = class SSI extends Build.Models.Storage {
         // create byte writer
         const writer = new Build.Scripts.ByteWriter();
 
-        // write version
+        // version
         writer.int32(ssi.Version);
 
-        // write number of files
+        // number of files
         writer.int32(ssi.Files.length);
 
-        // title length
+        // title
         writer.int8(ssi.Title.length);
 
         // title
-        writer.string(ssi.Title, 32);
+        writer.string(ssi.Title.text, 32);
 
         // runfile
         if (ssi.Version === 2) {
             writer.int8(ssi.RunFile.length);
-            writer.string(ssi.RunFile, 12);
+            writer.string(ssi.RunFile.text, 12);
         }
 
         // description
         for (let i = 0; i < 3; i++) {
             writer.int8(ssi.Description[i].length);
-            writer.string(ssi.Description[i], 70);
+            writer.string(ssi.Description[i].text, 70);
         }
 
         // write file names and sizes
         for (let i = 0; i < ssi.Files.length; i++) {
-            const fileName = ssi.Files[i].name.split(".")[0];
-            let fileExtension = ssi.Files[i].name.split(".")[1];
-            if (ssi.Version === 2) {
-                if (fileExtension.toUpperCase() !== "MAP") {
-                    fileExtension = fileExtension.split("").reverse().join("");
-                }
-            }
-            writer.int8(ssi.Files[i].name.length);
-            writer.string(`${fileName}.${fileExtension}`, 12);
+            writer.int8(ssi.Files[i].length);
+            writer.string(ssi.Files[i].name, 12);
             writer.int32(ssi.Files[i].bytes.length);
             writer.write(ssi.Files[i].fill || new Array(34+1+69).fill(0));
         }

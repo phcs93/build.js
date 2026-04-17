@@ -1,0 +1,29 @@
+{
+    "storage": {
+        "path": "C:/Games/Build Engine Stuff/games/DUKE3D_ADDONS_SSI_FILE_ORIGINAL_RELEASES/DUKEDC13.SSI",
+        "expected-files": [
+            { "name": "CINEOV3.ANM", "size": 2858 },
+            { "name": "DUKETEAM.ANM", "size": 363176 },
+            { "name": "TILES009.ART", "size": 958670 },
+            { "name": "TILES014.ART", "size": 2246668 },
+            { "name": "DUKE3D.BIN", "size": 4000 },
+            { "name": "USER.CON", "size": 36972 },
+            { "name": "DEMO1.DMO", "size": 7110 },
+            { "name": "DUKEDC1.MAP", "size": 166814 },
+            { "name": "DUKEDC2.MAP", "size": 134266 },
+            { "name": "DUKEDC3.MAP", "size": 198434 },
+            { "name": "DUKEDC4.MAP", "size": 338174 },
+            { "name": "DUKEDC5.MAP", "size": 155146 },
+            { "name": "DUKEDC6.MAP", "size": 238074 },
+            { "name": "DUKEDC7.MAP", "size": 140918 },
+            { "name": "DUKEDC8.MAP", "size": 238330 },
+            { "name": "DUKEDC9.MAP", "size": 164650 },
+            { "name": "DUKEDCSL.MAP", "size": 313190 },
+            { "name": "E1L8.MAP", "size": 167210 },
+            { "name": "HACK.SCP", "size": 56 },
+            { "name": "UNHACK.SCP", "size": 50 },
+            { "name": "BLANK.VOC", "size": 11068 },
+            { "name": "DUKEDC.VOC", "size": 2037874 }
+        ]
+    }
+}

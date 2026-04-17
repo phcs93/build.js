@@ -24,6 +24,12 @@ for (const game of games) {
         // loop through test scenario defintions
         for (const scenario of Object.keys(json)) {
 
+            // if scenario is set as null -> flag as skipped test for coherence
+            if (!json[scenario]) {
+                test.skip(scenario);
+                continue;
+            }
+
             // create a unit test for each scenario defintion
             test(scenario, () => {
 
@@ -43,9 +49,19 @@ for (const game of games) {
 
                 // deserialize bytes into instance
                 const instance = Build.Models[modelName].Unserialize(bytes);
+
+                // if (scenario === "demo") {
+                //     console.log(instance);
+                // }
                 
                 // first check if instance can be serialized back to the same bytes
                 const serialized = Build.Models[modelName].Serialize(instance);
+
+                // if (!Buffer.from(serialized).equals(Buffer.from(bytes))) {
+                //     fs.writeFileSync("original.json", JSON.stringify(Buffer.from(bytes), null, "\t"));
+                //     fs.writeFileSync("serialized.json", JSON.stringify(Buffer.from(serialized), null, "\t"));
+                // }
+
                 assert.ok(Buffer.from(serialized).equals(Buffer.from(bytes)));
 
             });

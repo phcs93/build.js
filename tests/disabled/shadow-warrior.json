@@ -716,5 +716,6 @@
 		"expected-colors": 256,
 		"expected-shades": 32,
 		"expected-translucency": 256
-	}
+	},
+	"lookup": null
 }
