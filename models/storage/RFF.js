@@ -116,7 +116,7 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
 
         // encrypt file contents before performing any calculations
         for (let i = 0; i < rff.Files.length; i++) {
-            rff.Files[i].flags |= 16;
+            //rff.Files[i].flags |= 16;
             rff.Files[i].bytes = (rff.Files[i].flags & 16) ? RFF.encrypt(rff.Files[i].bytes, { seed: 0, offset: 0, limit: 256 }) : rff.Files[i].bytes;
             rff.Files[i].size = rff.Files[i].bytes.length;
             rff.Files[i].offset = offset;
@@ -145,8 +145,8 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
         writer.int32(rff.Files.length);
 
         // unused
-        writer.write(rff.Padding2);                
-
+        writer.write(rff.Padding2);        
+        
         // write file contents
         for (let i = 0; i < rff.Files.length; i++) {            
             writer.write(rff.Files[i].bytes);

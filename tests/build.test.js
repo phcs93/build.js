@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const Build = require("../build.js");
 
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);
-const str = s => s.split("\x00")[0];
+const str = s => s.replace(/\x00/g, "")
 
 const games = fs.readdirSync("./tests/games").map(f => f.split(".")[0]);
 
@@ -49,18 +49,14 @@ for (const game of games) {
 
                 // deserialize bytes into instance
                 const instance = Build.Models[modelName].Unserialize(bytes);
-
-                // if (scenario === "demo") {
-                //     console.log(instance);
-                // }
                 
                 // first check if instance can be serialized back to the same bytes
                 const serialized = Build.Models[modelName].Serialize(instance);
 
-                // if (!Buffer.from(serialized).equals(Buffer.from(bytes))) {
-                //     fs.writeFileSync("original.json", JSON.stringify(Buffer.from(bytes), null, "\t"));
-                //     fs.writeFileSync("serialized.json", JSON.stringify(Buffer.from(serialized), null, "\t"));
-                // }
+                if (!Buffer.from(serialized).equals(Buffer.from(bytes))) {
+                    fs.writeFileSync(`tests/original-${game}-${scenario}.json`, JSON.stringify(Buffer.from(bytes), null, "\t"));
+                    fs.writeFileSync(`tests/serialized-${game}-${scenario}.json`, JSON.stringify(Buffer.from(serialized), null, "\t"));
+                }
 
                 assert.ok(Buffer.from(serialized).equals(Buffer.from(bytes)));
 
