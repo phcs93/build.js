@@ -16,19 +16,23 @@ Build.Models.Demo = class Demo {
         // this looks stupid but it makes it easier to use outside when bundled into lib format
         switch (demo.constructor.name) {
             case "DMO": return Build.Models.Demo.DMO.Serialize(demo);
-            case "VSW": return Build.Models.Demo.VSW.Serialize(demo);
+            case "SWD": return Build.Models.Demo.SWD.Serialize(demo);
         }
 
     }
 
     // transforms byte array into demo object
-    static Unserialize (bytes) {        
+    static Unserialize (bytes) {     
+
         const byteVersion = bytes[4];
-        if (Object.values(Build.Enums.ByteVersion).includes(byteVersion)) {
-            return Build.Models.Demo.DMO.Unserialize(bytes);
-        } else {
-            return Build.Models.Demo.VSW.Unserialize(bytes);
+
+        switch (true) {
+            case Build.Enums.ByteVersion.DUKE(byteVersion): return Build.Models.Demo.DMO.Unserialize(bytes);
+            case Build.Enums.ByteVersion.SW(byteVersion): return Build.Models.Demo.SWD.Unserialize(bytes);
+            case Build.Enums.ByteVersion.RR(byteVersion): return Build.Models.Demo.DMO.Unserialize(bytes);
+            //case Build.Enums.ByteVersion.BLOOD(byteVersion): return Build.Models.Demo.DMO.Unserialize(bytes);
         }
+        
     }
 
 }

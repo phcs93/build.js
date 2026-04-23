@@ -4,7 +4,7 @@ Build.Scripts.ByteReader = class ByteReader {
         this.bytes = new Uint8Array(bytes);
         this.index = 0;
     }
-
+    
     shift(n) { return this.bytes[this.index++] << n; }
     int8() { return (this.shift(0) << 24) >> 24; }
     int16() { return (this.shift(0) | this.shift(8)) << 16 >> 16; }

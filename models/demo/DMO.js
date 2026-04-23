@@ -7,7 +7,7 @@ Build.Models.Demo.DMO = class DMO {
     constructor(version) {
         this.Inputs = [];
         this.Version = version;
-        if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(this.Version)) {
+        if (!Build.Enums.ByteVersion.DOSDUKE(this.Version) && !Build.Enums.ByteVersion.RR(this.Version)) {
             this.GRPVersion = new Uint8Array(16);
         }
         this.Volume = 0;
@@ -36,7 +36,7 @@ Build.Models.Demo.DMO = class DMO {
 
         demo.Inputs = new Array(reader.uint32());
         demo.Version = reader.uint8();
-        if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) {
+        if (!Build.Enums.ByteVersion.DOSDUKE(demo.Version) && !Build.Enums.ByteVersion.RR(demo.Version)) {
             demo.GRPVersion = reader.read(4 * 4);
         }
         demo.Volume = reader.uint8();
@@ -54,7 +54,7 @@ Build.Models.Demo.DMO = class DMO {
         for (let i = 0; i < 16; i++) {
             demo.Names[i] = reader.string(32);
         }
-        if (demo.Version !== Build.Enums.ByteVersion.REDNUKEM_RRRA) {
+        if (!Build.Enums.ByteVersion.RR(demo.Version)) {
             demo.Dummy = reader.int32();
             demo.Map = reader.string(128);
         }
@@ -62,7 +62,7 @@ Build.Models.Demo.DMO = class DMO {
         demo.WeaponChoice = new Array(demo.Players);
         for (let i = 0; i < demo.Players; i++) {
             demo.AimMode[i] = reader.int8();
-            if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) {
+            if (!Build.Enums.ByteVersion.DOSDUKE(demo.Version) && !Build.Enums.ByteVersion.RR(demo.Version)) {
                 demo.WeaponChoice[i] = new Array(12);
                 for (let w = 0; w < 12; w++) {
                     demo.WeaponChoice[i][w] = reader.uint32();
@@ -97,17 +97,17 @@ Build.Models.Demo.DMO = class DMO {
     static Serialize(demo) {
 
         let headerSize = 4 + 1; 
-        if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) headerSize += 16;
+        if (!Build.Enums.ByteVersion.DOSDUKE(demo.Version) && !Build.Enums.ByteVersion.RR(demo.Version)) headerSize += 16;
         headerSize += 5;                    
         headerSize += 4;                    
         headerSize += 16;                   
         headerSize += 16 * 32;     
-        if (demo.Version !== Build.Enums.ByteVersion.REDNUKEM_RRRA) {   
+        if (!Build.Enums.ByteVersion.RR(demo.Version)) {   
             headerSize += 4;                    
             headerSize += 128;                  
         }
         headerSize += demo.Players;         
-        if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) {
+        if (!Build.Enums.ByteVersion.DOSDUKE(demo.Version) && !Build.Enums.ByteVersion.RR(demo.Version)) {
             headerSize += demo.Players * 12 * 4;
         }
 
@@ -116,7 +116,7 @@ Build.Models.Demo.DMO = class DMO {
         headerWriter.int32(demo.Inputs.length);
         headerWriter.int8(demo.Version | 0);
 
-        if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) {
+        if (!Build.Enums.ByteVersion.DOSDUKE(demo.Version) && !Build.Enums.ByteVersion.RR(demo.Version)) {
             let grp = demo.GRPVersion || new Uint8Array(16);
             if (!(grp instanceof Uint8Array)) grp = Uint8Array.from(grp);
             headerWriter.write(grp.slice(0, 16));
@@ -140,7 +140,7 @@ Build.Models.Demo.DMO = class DMO {
             headerWriter.string((demo.Names && demo.Names[i]) || "", 32);
         }
 
-        if (demo.Version !== Build.Enums.ByteVersion.REDNUKEM_RRRA) {
+        if (!Build.Enums.ByteVersion.RR(demo.Version)) {
             headerWriter.int32(demo.Dummy | 0);
             headerWriter.string(demo.Map || "", 128);
         }
@@ -149,7 +149,7 @@ Build.Models.Demo.DMO = class DMO {
             headerWriter.int8((demo.AimMode && demo.AimMode[i] != null) ? (demo.AimMode[i] | 0) : 0);
         }
 
-        if (Build.Enums.ByteVersion.XDUKE_19_7_OR_HDUKE(demo.Version)) {
+        if (!Build.Enums.ByteVersion.DOSDUKE(demo.Version) && !Build.Enums.ByteVersion.RR(demo.Version)) {
             for (let i = 0; i < demo.Players; i++) {
                 const row = (demo.WeaponChoice && demo.WeaponChoice[i]) || new Array(12).fill(0);
                 for (let w = 0; w < 12; w++) {

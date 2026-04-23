@@ -10,7 +10,7 @@ const games = fs.readdirSync("./tests/games").map(f => f.split(".")[0]);
 
 for (const game of games) {
 
-    suite(game, () => {
+    suite(game, async () => {
 
         // get game test scenarios defintions
         const json = require(`./games/${game}.json`);
@@ -19,7 +19,7 @@ for (const game of games) {
         const storageBytes = fs.readFileSync(json.storage.path);
 
         // get game file storage instance
-        const storage = Build.Models.Storage.Unserialize(storageBytes);
+        const storage = await Build.Models.Storage.Unserialize(storageBytes);
 
         // loop through test scenario defintions
         for (const scenario of Object.keys(json)) {
@@ -31,7 +31,7 @@ for (const game of games) {
             }
 
             // create a unit test for each scenario defintion
-            test(scenario, () => {
+            test(scenario, async () => {
 
                 // each scenario is coveniently named after the model it is testing
                 const modelName = capitalize(scenario)
@@ -39,20 +39,34 @@ for (const game of games) {
                 // bytes of file to be tested
                 let bytes = null;
                 
-                if (scenario === "storage") { // if scenario is "storage", we want to test the storage file itself
+                // if scenario is "storage", we want to test the storage file itself
+                if (scenario === "storage") { 
                     bytes = storageBytes;
-                } else if (json[scenario].path.indexOf(":") !== -1) { // if path is from disk, get bytes from disk
+                } else if (json[scenario].path.indexOf(":") !== -1) { 
+                    // if path is from disk, get bytes from disk
                     bytes = fs.readFileSync(json[scenario].path);
-                } else { // otherwise get bytes from storage instance
+                } else { 
+                    // otherwise get bytes from storage instance
                     bytes = storage.Files.filter(f => str(f.name) === json[scenario].path)[0].bytes;
                 }
 
                 // deserialize bytes into instance
-                const instance = Build.Models[modelName].Unserialize(bytes);
+                const instance = scenario === "storage" ? storage : await Build.Models[modelName].Unserialize(bytes);
                 
                 // first check if instance can be serialized back to the same bytes
-                const serialized = Build.Models[modelName].Serialize(instance);
-                assert.ok(Buffer.from(serialized).equals(Buffer.from(bytes)));
+                const serialized = await Build.Models[modelName].Serialize(instance);
+
+                if (!Buffer.from(serialized).equals(Buffer.from(bytes))) {
+                    fs.writeFileSync(`tests/${game}-${scenario}-original.json`, JSON.stringify(Buffer.from(bytes), null, "\t"));
+                    fs.writeFileSync(`tests/${game}-${scenario}-serialized.json`, JSON.stringify(Buffer.from(serialized), null, "\t"));
+                }
+
+                assert.ok(
+                    Buffer.from(serialized).equals(Buffer.from(bytes)), 
+                    serialized.length !== bytes.length ? 
+                    `original length = ${bytes.length} | serialized length = ${serialized.length}` :
+                    "lengths are equal but bytes are different"
+                );
 
             });
 

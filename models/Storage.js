@@ -22,12 +22,12 @@ Build.Models.Storage = class Storage {
     }
        
     // transforms storage object into byte array
-    static Serialize (storage) {
+    static async Serialize (storage) {
 
         // this looks stupid but it makes it easier to use outside when bundled into lib format
         switch (storage.constructor.name) {
             case "GRP": return Build.Models.Storage.GRP.Serialize(storage);
-            case "PK3": return Build.Models.Storage.PK3.Serialize(storage);
+            case "PK3": return await Build.Models.Storage.PK3.Serialize(storage);
             case "RFF": return Build.Models.Storage.RFF.Serialize(storage);
             case "SSI": return Build.Models.Storage.SSI.Serialize(storage);
         }
@@ -35,7 +35,7 @@ Build.Models.Storage = class Storage {
     }
 
     // transforms byte array into storage object
-    static Unserialize (bytes) {
+    static async Unserialize (bytes) {
 
         // grp / prg
         if (String.fromCharCode(...bytes.slice(0, 12)) === "KenSilverman") {
@@ -44,7 +44,7 @@ Build.Models.Storage = class Storage {
         
         // pk3
         if (String.fromCharCode(...bytes.slice(0, 4)) === "PK\x03\x04") {
-            return Build.Models.Storage.PK3.Unserialize(bytes);
+            return await Build.Models.Storage.PK3.Unserialize(bytes);
         }
 
         // rff

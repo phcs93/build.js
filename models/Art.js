@@ -19,6 +19,12 @@ Build.Models.Art = class Art {
 
         const reader = new Build.Scripts.ByteReader(bytes);
 
+        // check for ion fury signature
+        if (String.fromCharCode(...bytes.slice(0, 8)) === "BUILDART") {
+            art.Signature = reader.string(8);
+            console.log("reading ion fury art, this may take a minute...");
+        }
+
         art.Version = reader.uint32();
         art.Length = reader.uint32();
         art.Start = reader.uint32();
@@ -60,6 +66,11 @@ Build.Models.Art = class Art {
             }
         }
 
+        // check for ion fury signature
+        if (art.Signature) {
+            console.log("done reading ion fury art!");
+        }
+
         return art;
 
     }
@@ -69,6 +80,12 @@ Build.Models.Art = class Art {
         const numtiles = art.End - art.Start + 1
 
         const writer = new Build.Scripts.ByteWriter();
+
+        // check for ion fury signature
+        if (art.Signature) {
+            writer.string(art.Signature, art.Signature.length);
+            console.log("writing ion fury art, this may take a minute...");
+        }
 
         writer.int32(art.Version);
         writer.int32(art.Length);
@@ -100,6 +117,11 @@ Build.Models.Art = class Art {
                     writer.int8(art.Tiles[i].pixels[x][y]);
                 }
             }
+        }
+
+        // check for ion fury signature
+        if (art.Signature) {
+            console.log("done writing ion fury art!");
         }
 
         return writer.bytes;
