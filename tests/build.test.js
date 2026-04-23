@@ -52,12 +52,6 @@ for (const game of games) {
                 
                 // first check if instance can be serialized back to the same bytes
                 const serialized = Build.Models[modelName].Serialize(instance);
-
-                if (!Buffer.from(serialized).equals(Buffer.from(bytes))) {
-                    fs.writeFileSync(`tests/original-${game}-${scenario}.json`, JSON.stringify(Buffer.from(bytes), null, "\t"));
-                    fs.writeFileSync(`tests/serialized-${game}-${scenario}.json`, JSON.stringify(Buffer.from(serialized), null, "\t"));
-                }
-
                 assert.ok(Buffer.from(serialized).equals(Buffer.from(bytes)));
 
             });

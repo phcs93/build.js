@@ -1,4 +1,4 @@
 Build.Enums.MapType = {
-    DNM: "DNM", // dn, rr, sw, fury
+    MAP: "MAP", // dn, rr, sw, fury
     BLM: "BLM", // blood
 }

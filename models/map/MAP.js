@@ -1,9 +1,9 @@
 // reference: https://moddingwiki.shikadi.net/wiki/MAP_Format_(Build)
-Build.Models.Map.DNM = class DNM extends Build.Models.Map {
+Build.Models.Map.MAP = class MAP extends Build.Models.Map {
 
-    static SectorSize = 40;
-    static WallSize = 32;
-    static SpriteSize = 44;
+    // static SectorSize = 40;
+    // static WallSize = 32;
+    // static SpriteSize = 44;
 
     constructor (version) {
         super();
@@ -20,7 +20,7 @@ Build.Models.Map.DNM = class DNM extends Build.Models.Map {
 
     static Unserialize (bytes) {
 
-        const map = new Build.Models.Map.DNM(0);
+        const map = new Build.Models.Map.MAP(0);
         
         const reader = new Build.Scripts.ByteReader(bytes);
 

@@ -683,7 +683,7 @@
 		]
 	},
 	"map": {
-		"path": "E1M1.MAP",
+		"path": "C:\\Games\\Build Engine Games\\Blood\\blm.map",
 		"expected-sectors": 155,
 		"expected-walls": 1498,
 		"expected-sprites": 559

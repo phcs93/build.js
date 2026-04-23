@@ -4,7 +4,7 @@ Build.Models.Map = class Map {
     constructor(type) {
         if (type) {
             switch (type) {
-                case Build.Enums.MapType.DNM: return new Build.Models.Map.DNM();
+                case Build.Enums.MapType.MAP: return new Build.Models.Map.MAP();
                 case Build.Enums.MapType.BLM: return new Build.Models.Map.BLM();
             }
         }  
@@ -15,7 +15,7 @@ Build.Models.Map = class Map {
 
         // this looks stupid but it makes it easier to use outside when bundled into lib format
         switch (map.constructor.name) {
-            case "DNM": return Build.Models.Map.DNM.Serialize(map);
+            case "MAP": return Build.Models.Map.MAP.Serialize(map);
             case "BLM": return Build.Models.Map.BLM.Serialize(map);
         }
 
@@ -24,13 +24,13 @@ Build.Models.Map = class Map {
     // transforms byte array into map object
     static Unserialize (bytes) {
 
-        // blm
+        // blood map
         if (String.fromCharCode(...bytes.slice(0, 4)) === "BLM\x1a") {
             return Build.Models.Map.BLM.Unserialize(bytes);
         }
 
-        // dnm
-        return Build.Models.Map.DNM.Unserialize(bytes);
+        // common map
+        return Build.Models.Map.MAP.Unserialize(bytes);
 
     }
 
