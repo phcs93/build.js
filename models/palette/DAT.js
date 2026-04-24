@@ -1,7 +1,8 @@
 // reference: https://moddingwiki.shikadi.net/wiki/Duke_Nukem_3D_Palette_Format
-Build.Models.Palette.DAT = class DAT {
+Build.Models.Palette.DAT = class DAT extends Build.Models.Palette {
 
     constructor() {
+        super();
         this.Colors = new Array(256).fill({ r: 0, g: 0, b: 0 });
         this.Shades = new Array(0).fill(new Array(256).fill(0));
         this.Translucency = new Array(256).fill(new Array(256).fill(0));

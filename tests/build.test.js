@@ -24,9 +24,15 @@ for (const game of games) {
         // loop through test scenario defintions
         for (const scenario of Object.keys(json)) {
 
-            // if scenario is set as null -> flag as skipped test for coherence
+            // if scenario is set as null -> flag as skipped test
             if (!json[scenario]) {
                 test.skip(scenario);
+                continue;
+            }
+
+            // if scenario is set as empty object -> flag as todo
+            if (!Object.keys(json[scenario]).length) {
+                test.todo(scenario);
                 continue;
             }
 

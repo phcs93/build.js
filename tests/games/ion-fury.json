@@ -2317,5 +2317,8 @@
 	"art": {
 		"path": "tiles000.art",
 		"expected-tiles": 14280
-	}
+	},
+	"demo": null,
+	"palette": {},
+	"lookup": {}	
 }

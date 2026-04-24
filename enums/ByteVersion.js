@@ -124,7 +124,7 @@ Build.Enums.ByteVersion = {
     // BLOOD
     // ==================================================
 
-    NOTBLOOD_1_9_9_9 : 21,
+    NOTBLOOD_1_9_9_9 : 277,
 
     NOTBLOOD: (version) => {
         return [

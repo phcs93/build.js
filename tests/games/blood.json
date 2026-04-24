@@ -695,5 +695,7 @@
 	"demo": {
 		"path": "C:/Games/Build Engine Games/Blood/ports/notblood/BLOOD000.DEM",
 		"expected-inputs": 666
-	}
+	},
+	"palette": {},
+	"lookup": {}	
 }

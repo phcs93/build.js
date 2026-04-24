@@ -1,7 +1,8 @@
 // reference: https://voidpoint.io/terminx/eduke32/-/blob/master/source/sw/src/demo.cpp
-Build.Models.Demo.SWD = class SWD {
+Build.Models.Demo.SWD = class SWD extends Build.Models.Demo {
 
     constructor(version) {
+        super();
         this.Map = "";
         this.Players = [{
             x: 0,

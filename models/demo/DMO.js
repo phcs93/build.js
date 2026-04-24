@@ -1,10 +1,11 @@
 // reference: https://web.archive.org/web/20150603141920/http://www.quakewiki.net/archives/demospecs/dmo/dmo.html
-Build.Models.Demo.DMO = class DMO {
+Build.Models.Demo.DMO = class DMO extends Build.Models.Demo {
 
     static RECSYNCBUFSIZ = 2520;
     static InputSize = 10;
 
     constructor(version) {
+        super();
         this.Inputs = [];
         this.Version = version;
         if (!Build.Enums.ByteVersion.DOSDUKE(this.Version) && !Build.Enums.ByteVersion.RR(this.Version)) {

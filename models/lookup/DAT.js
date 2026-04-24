@@ -1,7 +1,8 @@
 // reference: https://moddingwiki.shikadi.net/wiki/Duke_Nukem_3D_Palette_Format
-Build.Models.Lookup.DAT = class DAT {
+Build.Models.Lookup.DAT = class DAT extends Build.Models.Lookup {
 
     constructor() {
+        super();
         this.Swaps = new Array(0).fill({
             number: 0, 
             table:  new Array(256).fill(0)
