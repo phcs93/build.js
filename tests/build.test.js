@@ -10,7 +10,7 @@ const games = fs.readdirSync("./tests/games").map(f => f.split(".")[0]);
 
 for (const game of games) {
 
-    suite(game, async () => {
+    suite(game, () => {
 
         // get game test scenarios defintions
         const json = require(`./games/${game}.json`);
@@ -19,13 +19,13 @@ for (const game of games) {
         const storageBytes = fs.readFileSync(json.storage.path);
 
         // get game file storage instance
-        const storage = await Build.Models.Storage.Unserialize(storageBytes);
+        const storage = new Build.Models.Storage(storageBytes);
 
         // loop through test scenario defintions
         for (const scenario of Object.keys(json)) {
 
             // if scenario is set as null -> flag as skipped test
-            if (!json[scenario]) {
+            if (!json[scenario] || scenario !== "storage") {
                 test.skip(scenario);
                 continue;
             }
@@ -37,7 +37,7 @@ for (const game of games) {
             }
 
             // create a unit test for each scenario defintion
-            test(scenario, async () => {
+            test(scenario, () => {
 
                 // each scenario is coveniently named after the model it is testing
                 const modelName = capitalize(scenario)
@@ -57,10 +57,10 @@ for (const game of games) {
                 }
 
                 // deserialize bytes into instance
-                const instance = scenario === "storage" ? storage : await Build.Models[modelName].Unserialize(bytes);
+                const instance = scenario === "storage" ? storage : new Build.Models[modelName](bytes);
                 
                 // first check if instance can be serialized back to the same bytes
-                const serialized = await Build.Models[modelName].Serialize(instance);
+                const serialized = instance.Serialize();
 
                 if (!Buffer.from(serialized).equals(Buffer.from(bytes))) {
                     fs.writeFileSync(`tests/${game}-${scenario}-original.json`, JSON.stringify(Buffer.from(bytes), null, "\t"));

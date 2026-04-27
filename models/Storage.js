@@ -1,65 +1,21 @@
 Build.Models.Storage = class Storage {
 
-    // create empty storage object based on type
-    constructor (type) {
-        if (type) {
-            switch (type) {
-                case Build.Enums.StorageType.GRP: return new Build.Models.Storage.GRP();
-                case Build.Enums.StorageType.PK3: return new Build.Models.Storage.PK3();
-                case Build.Enums.StorageType.RFF: return new Build.Models.Storage.RFF();
-                case Build.Enums.StorageType.SSI: return new Build.Models.Storage.SSI();
-            }
-        }        
+    constructor (bytes) {
+        switch (bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) {
+            case 0x536E654B: return new Build.Models.Storage.GRP(bytes); // KenS
+            case 0x1A464652: return new Build.Models.Storage.RFF(bytes); // RFF\x1a
+            case 0x04034B50: return new Build.Models.Storage.PK3(bytes); // PK\x03\x04
+            case 0x00000001: return new Build.Models.Storage.SSI(bytes); // \x01\x00\x00\x00
+            case 0x00000002: return new Build.Models.Storage.SSI(bytes); // \x02\x00\x00\x00
+        }
     }
 
-    // add file to storage (this is the same for all storage types)
     AddFile (name, bytes) {
-        this.Files.push({
-            name: name,
-            size: bytes.length,
-            bytes: bytes
-        });
+        throw new Error(`Method "${arguments.callee.name}()" not implemented.`);
     }
-       
-    // transforms storage object into byte array
-    static async Serialize (storage) {
-
-        // this looks stupid but it makes it easier to use outside when bundled into lib format
-        switch (storage.constructor.name) {
-            case "GRP": return Build.Models.Storage.GRP.Serialize(storage);
-            case "PK3": return await Build.Models.Storage.PK3.Serialize(storage);
-            case "RFF": return Build.Models.Storage.RFF.Serialize(storage);
-            case "SSI": return Build.Models.Storage.SSI.Serialize(storage);
-        }
-
-    }
-
-    // transforms byte array into storage object
-    static async Unserialize (bytes) {
-
-        // grp / prg
-        if (String.fromCharCode(...bytes.slice(0, 12)) === "KenSilverman") {
-            return Build.Models.Storage.GRP.Unserialize(bytes);
-        }
         
-        // pk3
-        if (String.fromCharCode(...bytes.slice(0, 4)) === "PK\x03\x04") {
-            return await Build.Models.Storage.PK3.Unserialize(bytes);
-        }
-
-        // rff
-        if (String.fromCharCode(...bytes.slice(0, 4)) === "RFF\x1a") {
-            return Build.Models.Storage.RFF.Unserialize(bytes);
-        }
-
-        // ssi
-        if (
-            (((bytes[0] << 0) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) === 1) ||
-            (((bytes[0] << 0) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) === 2)
-        ) {
-            return Build.Models.Storage.SSI.Unserialize(bytes);
-        }
-
+    Serialize () {
+        throw new Error(`Method "${arguments.callee.name}()" not implemented.`);
     }
 
 }

@@ -5,83 +5,42 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
     static HeaderSize = 32;
     static FileHeaderSize = 48;
 
-    // reference: https://github.com/camoto-project/gamecompjs/blob/master/formats/enc-xor-blood.js
-    static decrypt = (bytes, options) => {
-
-        const output = Uint8Array.from(bytes);
-        const offset = parseInt(options.offset || 0);
-        const seed = parseInt(options.seed || 0);
-        const limit = options.limit === undefined ? 256 : parseInt(options.limit);
-        const length = limit === 0 ? bytes.length : Math.min(limit, bytes.length);
-
-        for (let i = 0; i < length; i++) {
-            output[i] ^= seed + ((i + offset) >> 1);
-        }
-
-        return output;
-
-    };
-
-    // we can use the same algorithm since the encryption is symmetrical
-    static encrypt = (bytes, options) => RFF.decrypt(bytes, options);
-
     // util
     static toUnixTime = d => d.valueOf() / 1000 - new Date().getTimezoneOffset() * 60;
 
-    // create empty rff object
-    constructor() {
-        super();
-        this.Signature = "RFF\x1A";
-        this.Version = 0;
-        this.Padding1 = new Uint8Array(2).fill(0);
-        this.Offset = 0;
-        this.Files = [];
-        this.Padding2 = new Uint8Array(16).fill(0);        
-    }
+    constructor(bytes) {
 
-    // transform byte array into rff object
-    static Unserialize (bytes) {
+        super([]);    
 
-        // create empty rff object
-        const rff = new Build.Models.Storage.RFF();
-
-        // create byte reader
         const reader = new Build.Scripts.ByteReader(bytes);
 
-        // read RFF\x1a signature
-        rff.Signature = reader.string(4);
+        this.Signature = bytes ? reader.string(4) : "RFF\x1a";
+        this.Version = bytes ? reader.uint16() : 0x0300;
+        this.Padding1 = bytes ? reader.read(2) : new Array(2).fill(0);
+        this.FileHeadersOffset = bytes ? reader.uint32() : 0;
+        this.Files = new Array(bytes ? reader.uint32() : 0);
+        this.Padding2 = bytes ? reader.read(16) : new Array(16).fill(0);
 
-        // read version
+        let fileHeadersBytes = reader.bytes.slice(this.FileHeadersOffset, this.FileHeadersOffset + this.Files.length * RFF.FileHeaderSize);
+
         // 0x0200 - shareware 0.99 (CD version) - FAT is not encrypted
         // 0x0300 - registered 1.00 - FAT is encrypted
         // 0x0301 - patches for registered and later shareware releases - FAT is encrypted
-        rff.Version = reader.uint16();
+        if (this.Version > 0x0200) {
+            // decrypt chunk of file headers bytes (these are located AFTER the file contents)
+            fileHeadersBytes = Build.Scripts.ENCXOR.Compute(fileHeadersBytes, {
+                seed: this.FileHeadersOffset & 0xFF,
+                offset: 0,
+                limit: 0,
+                shift: 1 // used by my custom hybrid implementation
+            });
+        }
 
-        // unused
-        rff.Padding1 = reader.read(2);
-
-        // read fat offset (file headers offset)
-        rff.Offset = reader.uint32();
-
-        // read number of files
-        rff.Files = new Array(reader.uint32());
-
-        // unused
-        rff.Padding2 = reader.read(16);
-
-        // decrypt chunk of file headers bytes (these are located AFTER the file contents)
-        const fileHeadersBytes = RFF.decrypt(reader.bytes.slice(rff.Offset, rff.Offset + rff.Files.length * RFF.FileHeaderSize), {
-            seed: rff.Offset & 0xFF,
-            offset: 0,
-            limit: 0
-        });
-
-        // create file header reader
         const fileHeaderReader = new Build.Scripts.ByteReader(fileHeadersBytes);
 
         // read files headers
-        for (let i = 0; i < rff.Files.length; i++) {
-            rff.Files[i] = {
+        for (let i = 0; i < this.Files.length; i++) {
+            this.Files[i] = {
                 cache: fileHeaderReader.read(16),
                 offset: fileHeaderReader.uint32(),
                 size: fileHeaderReader.uint32(),
@@ -94,93 +53,92 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
                 bytes: []
             };
             // just for better readability -> this needs to be undone when writing back
-            rff.Files[i].name += `.${rff.Files[i].type}`;
+            this.Files[i].name += `.${this.Files[i].type}`;
         }
 
         // read files contents
-        for (let i = 0; i < rff.Files.length; i++) {
-            const bytes = reader.bytes.slice(rff.Files[i].offset, rff.Files[i].offset + rff.Files[i].size);
-            rff.Files[i].bytes = (rff.Files[i].flags & 16) ? RFF.decrypt(bytes, { seed: 0, offset: 0, limit: 256 }) : bytes;
+        for (let i = 0; i < this.Files.length; i++) {
+            const bytes = reader.bytes.slice(this.Files[i].offset, this.Files[i].offset + this.Files[i].size);
+            // check if file needs to be decrypted
+            if (this.Files[i].flags & 16) {
+                // decrypt file bytes
+                this.Files[i].bytes = Build.Scripts.ENCXOR.Compute(bytes, { 
+                    seed: 0, 
+                    offset: 0, 
+                    limit: 256, 
+                    shift: 1 // used by my custom hybrid implementation
+                });
+            } else {
+                // otherwise just copy bytes
+                this.Files[i].bytes = bytes;
+            }
         }
-
-        // return filled rff object
-        return rff;
 
     }
 
-    // transform rff object into byte array
-    static Serialize (rff) {
+    Serialize () {
 
         // file content size offsets (initialize pointing to after the rff header)
-        let offset = RFF.HeaderSize;
+        this.FileHeadersOffset = RFF.HeaderSize;
 
-        // encrypt file contents before performing any calculations
-        for (let i = 0; i < rff.Files.length; i++) {
-            //rff.Files[i].flags |= 16;
-            rff.Files[i].bytes = (rff.Files[i].flags & 16) ? RFF.encrypt(rff.Files[i].bytes, { seed: 0, offset: 0, limit: 256 }) : rff.Files[i].bytes;
-            rff.Files[i].size = rff.Files[i].bytes.length;
-            rff.Files[i].offset = offset;
-            offset += rff.Files[i].size;
+        // process file contents before performing any calculations
+        for (let i = 0; i < this.Files.length; i++) {
+            // check if file needs to be encrypted
+            if (this.Files[i].flags & 16) {
+                // encrypt file bytes
+                this.Files[i].bytes = Build.Scripts.ENCXOR.Compute(this.Files[i].bytes, { 
+                    seed: 0, 
+                    offset: 0, 
+                    limit: 256, 
+                    shift: 1 // used by my custom hybrid implementation
+                });
+            }
+            this.Files[i].size = this.Files[i].bytes.length;
+            this.Files[i].offset = this.FileHeadersOffset;
+            this.FileHeadersOffset += this.Files[i].size;
         }
 
-        // create byte writer
         const writer = new Build.Scripts.ByteWriter();
 
-        // write RFF\x1A signature
-        writer.string(rff.Signature, 4);
-
-        // write version
-        // 0x0200 - shareware 0.99 (CD version) - FAT is not encrypted
-        // 0x0300 - registered 1.00 - FAT is encrypted
-        // 0x0301 - patches for registered and later shareware releases - FAT is encrypted
-        writer.int16(rff.Version);
-
-        // unused
-        writer.write(rff.Padding1);
-
-        // write fat offset (file headers offset)
-        writer.int32(RFF.HeaderSize + rff.Files.reduce((sum, f) => sum += f.size , 0));
-
-        // write number of files
-        writer.int32(rff.Files.length);
-
-        // unused
-        writer.write(rff.Padding2);        
+        writer.string(this.Signature, 4);
+        writer.int16(this.Version);
+        writer.write(this.Padding1);
+        writer.int32(this.FileHeadersOffset);
+        writer.int32(this.Files.length);
+        writer.write(this.Padding2);        
         
         // write file contents
-        for (let i = 0; i < rff.Files.length; i++) {            
-            writer.write(rff.Files[i].bytes);
-            //const bytes = rff.Files[i].flags & 16 ? encrypt(rff.Files[i].bytes, { seed: 0, offset: 0, limit: 256 }) : rff.Files[i].bytes;
-            //writer.write(bytes);
-            //rff.Files[i].offset = offset;
-            // this needs to be calculated here because of the encryption
-            //offset += bytes.length;
+        for (let i = 0; i < this.Files.length; i++) {            
+            writer.write(this.Files[i].bytes);
         }
 
-        // create file header writer
         const fileHeaderWriter = new Build.Scripts.ByteWriter();
 
         // write files headers
-        for (let i = 0; i < rff.Files.length; i++) {
-            fileHeaderWriter.write(rff.Files[i].cache || new Uint8Array(16).fill(0)); // unused
-            fileHeaderWriter.int32(rff.Files[i].offset);
-            fileHeaderWriter.int32(rff.Files[i].size);
-            fileHeaderWriter.int32(rff.Files[i].packedSize); // packed size
-            fileHeaderWriter.int32(rff.Files[i].time || RFF.toUnixTime(new Date())); // last modified
-            fileHeaderWriter.int8(rff.Files[i].flags);
-            fileHeaderWriter.string(rff.Files[i].name.split(".")[1], 3); // extension
-            fileHeaderWriter.string(rff.Files[i].name.split(".")[0], 8); // name
-            fileHeaderWriter.int32(rff.Files[i].id || 0);
+        for (let i = 0; i < this.Files.length; i++) {
+            fileHeaderWriter.write(this.Files[i].cache || new Uint8Array(16).fill(0));
+            fileHeaderWriter.int32(this.Files[i].offset);
+            fileHeaderWriter.int32(this.Files[i].size);
+            fileHeaderWriter.int32(this.Files[i].packedSize);
+            fileHeaderWriter.int32(this.Files[i].time || RFF.toUnixTime(new Date()));
+            fileHeaderWriter.int8(this.Files[i].flags);
+            fileHeaderWriter.string(this.Files[i].name.split(".")[1], 3);
+            fileHeaderWriter.string(this.Files[i].name.split(".")[0], 8);
+            fileHeaderWriter.int32(this.Files[i].id || 0);
         }
 
-        // encrypt chunks of file headers
-        writer.write(RFF.encrypt(fileHeaderWriter.bytes, {
-            seed: offset & 0xFF,
-            offset: 0,
-            limit: 0
-        }));
+        // 0x0200 - shareware 0.99 (CD version) - FAT is not encrypted
+        // 0x0300 - registered 1.00 - FAT is encrypted
+        // 0x0301 - patches for registered and later shareware releases - FAT is encrypted
+        if (this.Version > 0x0200) {
+            writer.write(Build.Scripts.ENCXOR.Compute(fileHeaderWriter.bytes, {
+                seed: this.FileHeadersOffset & 0xFF,
+                offset: 0,
+                limit: 0,
+                shift: 1
+            }));
+        }
 
-        // return bytes
         return writer.bytes;
 
     }

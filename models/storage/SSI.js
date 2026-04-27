@@ -1,121 +1,84 @@
 // reference: http://dukertcm.com/knowledge-base/downloads-rtcm/general-tools/unpackssi.zip
 Build.Models.Storage.SSI = class SSI extends Build.Models.Storage {
 
-    constructor() {
-        super();
-        this.Version = 0;
-        this.Files = [];
-        this.Title = "";
-        this.RunFile = "";
-        this.Description = [];
-    }
+    constructor(bytes) {
 
-    // transform byte array into ssi object
-    static Unserialize(bytes) {
-
-        // create empty ssi object
-        const ssi = new Build.Models.Storage.SSI();
-
-        // create byte reader
+        super([]);
+        
         const reader = new Build.Scripts.ByteReader(bytes);
 
-        // read file version (1 or 2)
-        ssi.Version = reader.uint32();
+        this.Version = bytes ? reader.uint32() : 1;
+        this.Files = new Array(bytes ? reader.uint32() : 0);
 
-        // read number of files
-        ssi.Files = new Array(reader.uint32());
-
-        // title
-        ssi.Title = {
-            length: reader.uint8(),
-            text: reader.string(32)
+        this.Title = {
+            length: bytes ? reader.uint8() : 0,
+            text: bytes ? reader.string(32) : ""
         };
 
-        // runfile
-        if (ssi.Version === 2) {
-            ssi.RunFile = {
-                length: reader.uint8(),
-                text: reader.string(12)
+        if (this.Version === 2) {
+            this.RunFile = {
+                length: bytes ? reader.uint8() : 0,
+                text: bytes ? reader.string(12) : ""
             };
         }
 
-        // description
-        ssi.Description = [];
+        this.Description = [];
 
         for (let i = 0; i < 3; i++) {
-            ssi.Description[i] = {
-                length: reader.uint8(),
-                text: reader.string(70)
+            this.Description[i] = {
+                length: bytes ? reader.uint8() : 0,
+                text: bytes ? reader.string(70) : ""
             };
         }
 
-        // file names and sizes
-        for (let i = 0; i < ssi.Files.length; i++) {
-            ssi.Files[i] = {
+        for (let i = 0; i < this.Files.length; i++) {
+            this.Files[i] = {
                 length: reader.uint8(),
                 name: reader.string(12),
                 size: reader.uint32(),
-                fill: reader.read(34+1+69), // unknown
+                fill: reader.read(34+1+69),
                 bytes: null
             }
         }
 
-        // file bytes
-        for (let i = 0; i < ssi.Files.length; i++) {
-            ssi.Files[i].bytes = reader.read(ssi.Files[i].size);
+        for (let i = 0; i < this.Files.length; i++) {
+            this.Files[i].bytes = reader.read(this.Files[i].size);
         }
-
-        // return filled object
-        return ssi;
-
+        
     }
 
-    // transform ssi object into byte array
-    static Serialize(ssi) {
+    Serialize() {
 
-        // create byte writer
         const writer = new Build.Scripts.ByteWriter();
 
-        // version
-        writer.int32(ssi.Version);
+        writer.int32(this.Version);
+        writer.int32(this.Files.length);
+        writer.int8(this.Title.length);
+        writer.string(this.Title.text, 32);
 
-        // number of files
-        writer.int32(ssi.Files.length);
-
-        // title
-        writer.int8(ssi.Title.length);
-
-        // title
-        writer.string(ssi.Title.text, 32);
-
-        // runfile
-        if (ssi.Version === 2) {
-            writer.int8(ssi.RunFile.length);
-            writer.string(ssi.RunFile.text, 12);
+        if (this.Version === 2) {
+            writer.int8(this.RunFile.length);
+            writer.string(this.RunFile.text, 12);
         }
 
-        // description
         for (let i = 0; i < 3; i++) {
-            writer.int8(ssi.Description[i].length);
-            writer.string(ssi.Description[i].text, 70);
+            writer.int8(this.Description[i].length);
+            writer.string(this.Description[i].text, 70);
         }
 
-        // write file names and sizes
-        for (let i = 0; i < ssi.Files.length; i++) {
-            writer.int8(ssi.Files[i].length);
-            writer.string(ssi.Files[i].name, 12);
-            writer.int32(ssi.Files[i].bytes.length);
-            writer.write(ssi.Files[i].fill || new Array(34+1+69).fill(0));
+        for (let i = 0; i < this.Files.length; i++) {
+            writer.int8(this.Files[i].length);
+            writer.string(this.Files[i].name, 12);
+            writer.int32(this.Files[i].bytes.length);
+            writer.write(this.Files[i].fill || new Array(34+1+69).fill(0));
         }
 
-        // write file bytes
-        for (let i = 0; i < ssi.Files.length; i++) {            
-            writer.write(ssi.Files[i].bytes);
+        for (let i = 0; i < this.Files.length; i++) {            
+            writer.write(this.Files[i].bytes);
         }
 
-        // return array of bytes
         return writer.bytes;
 
-    };
+    }
 
 }

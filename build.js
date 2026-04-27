@@ -53,7 +53,7 @@ if (process && process.versions && process.versions.node) {
 
             }
 
-            // load the scripts, enums and models into th library array
+            // load the scripts, enums and models into the library array
             recursiveRead(__dirname + '/scripts');
             recursiveRead(__dirname + '/enums');
             recursiveRead(__dirname + '/models');
@@ -101,7 +101,7 @@ if (process && process.versions && process.versions.node) {
 
         }
 
-        // if we are not building or testing, just export the Build variable as a module
+        // if we are not building or testing, just export the Build variable as a module (in case someone requires or imports this file)
         default: {
             module.exports = Build;
             break;
