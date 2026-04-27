@@ -1,40 +1,23 @@
 // reference: https://moddingwiki.shikadi.net/wiki/MAP_Format_(Build)
 Build.Models.Map.MAP = class MAP extends Build.Models.Map {
 
-    // static SectorSize = 40;
-    // static WallSize = 32;
-    // static SpriteSize = 44;
+    constructor (bytes) {
 
-    constructor (version) {
-        super();
-        this.Version = version;
-        this.X = 0;
-        this.Y = 0;
-        this.Z = 0;
-        this.A = 0;
-        this.S = 0;   
-        this.Sectors = [];
-        this.Walls = [];
-        this.Sprites = [];
-    }
+        super([]);
 
-    static Unserialize (bytes) {
-
-        const map = new Build.Models.Map.MAP(0);
-        
         const reader = new Build.Scripts.ByteReader(bytes);
 
-        map.Version = reader.int32();
-        map.X = reader.int32();
-        map.Y = reader.int32();
-        map.Z = reader.int32();
-        map.A = reader.int16();
-        map.S = reader.int16();   
+        this.Version = bytes ? reader.int32() : 7;
+        this.X = bytes ? reader.int32() : 0;
+        this.Y = bytes ? reader.int32() : 0;
+        this.Z = bytes ? reader.int32() : 0;
+        this.A = bytes ? reader.int16() : 0;
+        this.S = bytes ? reader.int16() : 0;
 
-        map.Sectors = new Array(reader.uint16());
+        this.Sectors = new Array(bytes ? reader.uint16() : 0);
 
-        for (let i = 0; i < map.Sectors.length; i++) {
-            map.Sectors[i] = {
+        for (let i = 0; i < this.Sectors.length; i++) {
+            this.Sectors[i] = {
                 wallptr: reader.int16(),
                 wallnum: reader.int16(),
                 ceilingz: reader.int32(),
@@ -61,10 +44,10 @@ Build.Models.Map.MAP = class MAP extends Build.Models.Map {
             };
         }
 
-        map.Walls = new Array(reader.uint16());
+        this.Walls = new Array(bytes ? reader.uint16() : 0);
 
-        for (let i = 0; i < map.Walls.length; i++) {
-            map.Walls[i] = {
+        for (let i = 0; i < this.Walls.length; i++) {
+            this.Walls[i] = {
                 x: reader.int32(),
                 y: reader.int32(),
                 point2: reader.int16(),
@@ -85,10 +68,10 @@ Build.Models.Map.MAP = class MAP extends Build.Models.Map {
             };
         }
 
-        map.Sprites = new Array(reader.uint16());
+        this.Sprites = new Array(bytes ? reader.uint16() : 0);
 
-        for (let i = 0; i < map.Sprites.length; i++) {
-            map.Sprites[i] = {
+        for (let i = 0; i < this.Sprites.length; i++) {
+            this.Sprites[i] = {
                 x: reader.int32(),
                 y: reader.int32(),
                 z: reader.int32(),
@@ -115,97 +98,95 @@ Build.Models.Map.MAP = class MAP extends Build.Models.Map {
             };
         }
 
-        return map;
-
     }
 
-    static Serialize (map) {
+    Serialize () {
 
         const writer = new Build.Scripts.ByteWriter();
 
-        writer.int32(map.Version);
-        writer.int32(map.X);
-        writer.int32(map.Y);
-        writer.int32(map.Z);
-        writer.int16(map.A);
-        writer.int16(map.S);
+        writer.int32(this.Version);
+        writer.int32(this.X);
+        writer.int32(this.Y);
+        writer.int32(this.Z);
+        writer.int16(this.A);
+        writer.int16(this.S);
 
-        writer.int16(map.Sectors.length);
+        writer.int16(this.Sectors.length);
 
-        for (let i = 0; i < map.Sectors.length; i++) {
-            writer.int16(map.Sectors[i].wallptr);
-            writer.int16(map.Sectors[i].wallnum);
-            writer.int32(map.Sectors[i].ceilingz);
-            writer.int32(map.Sectors[i].floorz);
-            writer.int16(map.Sectors[i].ceilingstat);
-            writer.int16(map.Sectors[i].floorstat);
-            writer.int16(map.Sectors[i].ceilingpicnum);
-            writer.int16(map.Sectors[i].ceilingheinum);
-            writer.int8(map.Sectors[i].ceilingshade);
-            writer.int8(map.Sectors[i].ceilingpal);
-            writer.int8(map.Sectors[i].ceilingxpanning);
-            writer.int8(map.Sectors[i].ceilingypanning);
-            writer.int16(map.Sectors[i].floorpicnum);
-            writer.int16(map.Sectors[i].floorheinum);
-            writer.int8(map.Sectors[i].floorshade);
-            writer.int8(map.Sectors[i].floorpal);
-            writer.int8(map.Sectors[i].floorxpanning);
-            writer.int8(map.Sectors[i].floorypanning);
-            writer.int8(map.Sectors[i].visibility);
-            writer.int8(map.Sectors[i].filler);
-            writer.int16(map.Sectors[i].lotag);
-            writer.int16(map.Sectors[i].hitag);
-            writer.int16(map.Sectors[i].extra);
+        for (let i = 0; i < this.Sectors.length; i++) {
+            writer.int16(this.Sectors[i].wallptr);
+            writer.int16(this.Sectors[i].wallnum);
+            writer.int32(this.Sectors[i].ceilingz);
+            writer.int32(this.Sectors[i].floorz);
+            writer.int16(this.Sectors[i].ceilingstat);
+            writer.int16(this.Sectors[i].floorstat);
+            writer.int16(this.Sectors[i].ceilingpicnum);
+            writer.int16(this.Sectors[i].ceilingheinum);
+            writer.int8(this.Sectors[i].ceilingshade);
+            writer.int8(this.Sectors[i].ceilingpal);
+            writer.int8(this.Sectors[i].ceilingxpanning);
+            writer.int8(this.Sectors[i].ceilingypanning);
+            writer.int16(this.Sectors[i].floorpicnum);
+            writer.int16(this.Sectors[i].floorheinum);
+            writer.int8(this.Sectors[i].floorshade);
+            writer.int8(this.Sectors[i].floorpal);
+            writer.int8(this.Sectors[i].floorxpanning);
+            writer.int8(this.Sectors[i].floorypanning);
+            writer.int8(this.Sectors[i].visibility);
+            writer.int8(this.Sectors[i].filler);
+            writer.int16(this.Sectors[i].lotag);
+            writer.int16(this.Sectors[i].hitag);
+            writer.int16(this.Sectors[i].extra);
         }
 
-        writer.int16(map.Walls.length);
+        writer.int16(this.Walls.length);
 
-        for (let i = 0; i < map.Walls.length; i++) {
-            writer.int32(map.Walls[i].x);
-            writer.int32(map.Walls[i].y);
-            writer.int16(map.Walls[i].point2);
-            writer.int16(map.Walls[i].nextwall);
-            writer.int16(map.Walls[i].nextsector);
-            writer.int16(map.Walls[i].cstat);
-            writer.int16(map.Walls[i].picnum);
-            writer.int16(map.Walls[i].overpicnum);
-            writer.int8(map.Walls[i].shade);
-            writer.int8(map.Walls[i].pal);
-            writer.int8(map.Walls[i].xrepeat);
-            writer.int8(map.Walls[i].yrepeat);
-            writer.int8(map.Walls[i].xpanning);
-            writer.int8(map.Walls[i].ypanning);
-            writer.int16(map.Walls[i].lotag);
-            writer.int16(map.Walls[i].hitag);
-            writer.int16(map.Walls[i].extra);
+        for (let i = 0; i < this.Walls.length; i++) {
+            writer.int32(this.Walls[i].x);
+            writer.int32(this.Walls[i].y);
+            writer.int16(this.Walls[i].point2);
+            writer.int16(this.Walls[i].nextwall);
+            writer.int16(this.Walls[i].nextsector);
+            writer.int16(this.Walls[i].cstat);
+            writer.int16(this.Walls[i].picnum);
+            writer.int16(this.Walls[i].overpicnum);
+            writer.int8(this.Walls[i].shade);
+            writer.int8(this.Walls[i].pal);
+            writer.int8(this.Walls[i].xrepeat);
+            writer.int8(this.Walls[i].yrepeat);
+            writer.int8(this.Walls[i].xpanning);
+            writer.int8(this.Walls[i].ypanning);
+            writer.int16(this.Walls[i].lotag);
+            writer.int16(this.Walls[i].hitag);
+            writer.int16(this.Walls[i].extra);
         }
 
-        writer.int16(map.Sprites.length);
+        writer.int16(this.Sprites.length);
 
-        for (let i = 0; i < map.Sprites.length; i++) {
-            writer.int32(map.Sprites[i].x);
-            writer.int32(map.Sprites[i].y);
-            writer.int32(map.Sprites[i].z);
-            writer.int16(map.Sprites[i].cstat);
-            writer.int16(map.Sprites[i].picnum);
-            writer.int8(map.Sprites[i].shade);
-            writer.int8(map.Sprites[i].pal);
-            writer.int8(map.Sprites[i].clipdist);
-            writer.int8(map.Sprites[i].filler);
-            writer.int8(map.Sprites[i].xrepeat);
-            writer.int8(map.Sprites[i].yrepeat);
-            writer.int8(map.Sprites[i].xoffset);
-            writer.int8(map.Sprites[i].yoffset);
-            writer.int16(map.Sprites[i].sectnum);
-            writer.int16(map.Sprites[i].statnum);
-            writer.int16(map.Sprites[i].ang);
-            writer.int16(map.Sprites[i].owner);
-            writer.int16(map.Sprites[i].xvel);
-            writer.int16(map.Sprites[i].yvel);
-            writer.int16(map.Sprites[i].zvel);
-            writer.int16(map.Sprites[i].lotag);
-            writer.int16(map.Sprites[i].hitag);
-            writer.int16(map.Sprites[i].extra);
+        for (let i = 0; i < this.Sprites.length; i++) {
+            writer.int32(this.Sprites[i].x);
+            writer.int32(this.Sprites[i].y);
+            writer.int32(this.Sprites[i].z);
+            writer.int16(this.Sprites[i].cstat);
+            writer.int16(this.Sprites[i].picnum);
+            writer.int8(this.Sprites[i].shade);
+            writer.int8(this.Sprites[i].pal);
+            writer.int8(this.Sprites[i].clipdist);
+            writer.int8(this.Sprites[i].filler);
+            writer.int8(this.Sprites[i].xrepeat);
+            writer.int8(this.Sprites[i].yrepeat);
+            writer.int8(this.Sprites[i].xoffset);
+            writer.int8(this.Sprites[i].yoffset);
+            writer.int16(this.Sprites[i].sectnum);
+            writer.int16(this.Sprites[i].statnum);
+            writer.int16(this.Sprites[i].ang);
+            writer.int16(this.Sprites[i].owner);
+            writer.int16(this.Sprites[i].xvel);
+            writer.int16(this.Sprites[i].yvel);
+            writer.int16(this.Sprites[i].zvel);
+            writer.int16(this.Sprites[i].lotag);
+            writer.int16(this.Sprites[i].hitag);
+            writer.int16(this.Sprites[i].extra);
         }
 
         return writer.bytes;

@@ -15,80 +15,36 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
     static XWallSize = 24;
     static XSpriteSize = 56;
 
-    // reference: https://github.com/clipmove/NotBlood/blob/master/source/blood/src/db.cpp#L203
-    static crypt = (bytes, key) => {
+    constructor (bytes) {
 
-        const output = Uint8Array.from(bytes);
+        super([]);
 
-        for (let i = 0; i < bytes.length; i++) {
-            output[i] ^= (key & 0xFF);
-            key++;
-        }
-
-        return output;
-
-    };
-
-    // create empty map object
-    constructor () {
-        super();
-        this.Signature = "BLM\x1a";
-        this.Version = 0;
-        this.X = 0;
-        this.Y = 0;
-        this.Z = 0;
-        this.A = 0;
-        this.S = 0;
-        this.SkyBits = 0;
-        this.Visibility = 0;
-        this.SongId = 0;
-        this.Parallax = 0;
-        this.Revision = 0;
-        this.Sectors = [];
-        this.Walls = [];
-        this.Sprites = [];
-        this.XPadStart = 0;
-        this.XSectorSize = 0;
-        this.XWallSize = 0;
-        this.XSpriteSize = 0;
-        this.XPadEnd = 0;
-        this.SkyOffsets = [];
-    }
-
-    // transforms byte array into map object
-    static Unserialize (bytes) {
-
-        // create empty map object
-        const map = new Build.Models.Map.BLM();
-
-        // create byte reader
         const reader = new Build.Scripts.ByteReader(bytes);
 
-        // read BLM\x1a signature
-        map.Signature = reader.string(4);
-        
-        // read map version
-        map.Version = reader.int16();
+        this.Signature = bytes ? reader.string(4) : "BLM\x1a";        
+        this.Version = bytes ? reader.int16() : 0x0700;
 
         // version flag?
-        map.byte1A76C8 = (map.Version & 0xFF00) === 0x0700;
-        map.byte1A76C7 = false;
-        map.byte1A76C6 = false;
+        this.byte1A76C8 = (this.Version & 0xFF00) === 0x0700;
+        this.byte1A76C7 = false;
+        this.byte1A76C6 = false;
 
         // read header bytes
-        let headerBytes = reader.read(BLM.HeaderSize);
+        let headerBytes = bytes ? reader.read(BLM.HeaderSize) : 0;
 
         // get int32 key (where the "song id" would be)
-        map.at16 = ((headerBytes[22] << 0) | (headerBytes[23] << 8) | (headerBytes[24] << 16) | (headerBytes[25] << 24)) >>> 0;
+        this.at16 = bytes ? ((headerBytes[22] << 0) | (headerBytes[23] << 8) | (headerBytes[24] << 16) | (headerBytes[25] << 24)) >>> 0 : 0;
 
         // check if decryption is needed
-        if (map.at16 !== 0 && map.at16 !== BLM.NewKey && map.at16 !== BLM.OldKey) {
+        if (this.at16 !== 0 && this.at16 !== BLM.NewKey && this.at16 !== BLM.OldKey) {
 
             // decrypt header bytes
-            headerBytes = BLM.crypt(headerBytes, BLM.NewKey);
+            headerBytes = Build.Scripts.ENCXOR.Compute(headerBytes, {
+                seed: BLM.NewKey
+            });
 
             // ecryption flag?
-            map.byte1A76C7 = true;
+            this.byte1A76C7 = true;
 
         }
 
@@ -96,72 +52,78 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
         const headerReader = new Build.Scripts.ByteReader(headerBytes);
 
         // read map header
-        map.X = headerReader.int32();
-        map.Y = headerReader.int32();
-        map.Z = headerReader.int32();
-        map.A = headerReader.int16();
-        map.S = headerReader.int16();
-        map.SkyBits = headerReader.int16() & 0xFF; // int16 to int8 (original code did this, why tho?)
-        map.Visibility = headerReader.int32();
-        map.SongId = headerReader.int32();
-        map.Parallax = headerReader.int8();
-        map.Revision = headerReader.int32();
+        this.X = bytes ? headerReader.int32() : 0;
+        this.Y = bytes ? headerReader.int32() : 0;
+        this.Z = bytes ? headerReader.int32() : 0;
+        this.A = bytes ? headerReader.int16() : 0;
+        this.S = bytes ? headerReader.int16() : 0;
+        this.SkyBits = bytes ? headerReader.int16() & 0xFF : 0; // int16 to int8 (original code did this, why tho?)
+        this.Visibility = bytes ? headerReader.int32() : 0;
+        this.SongId = bytes ? headerReader.int32() : 0;
+        this.Parallax = bytes ? headerReader.int8() : 0;
+        this.Revision = bytes ? headerReader.int32() : 0;
 
         // get number of structs
-        map.Sectors = new Array(headerReader.uint16());
-        map.Walls = new Array(headerReader.uint16());
-        map.Sprites = new Array(headerReader.uint16());
+        this.Sectors = new Array(bytes ? headerReader.uint16() : 0);
+        this.Walls = new Array(bytes ? headerReader.uint16() : 0);
+        this.Sprites = new Array(bytes ? headerReader.uint16() : 0);
 
         // another flag?
-        if (map.byte1A76C8) {
-            if (map.SongId === BLM.NewKey || map.SongId === BLM.OldKey) {                
-                map.byte1A76C6 = true;
-            } else if (!map.SongId) {
-                map.byte1A76C6 = false;
+        if (this.byte1A76C8) {
+            if (this.SongId === BLM.NewKey || this.SongId === BLM.OldKey) {                
+                this.byte1A76C6 = true;
+            } else if (!this.SongId) {
+                this.byte1A76C6 = false;
             }
         }
 
         // read extra flags header
-        if (map.byte1A76C8) {
-            const extraHeaderBytes = BLM.crypt(reader.read(BLM.ExtraHeaderSize), map.Walls.length);
+        if (this.byte1A76C8) {
+            const extraHeaderBytes = Build.Scripts.ENCXOR.Compute(bytes ? reader.read(BLM.ExtraHeaderSize) : [], {
+                seed: this.Walls.length
+            });
             const extraReader = new Build.Scripts.ByteReader(extraHeaderBytes);
-            map.XPadStart = extraReader.read(64);
-            map.XSpriteSize = extraReader.uint32();
-            map.XWallSize = extraReader.uint32();
-            map.XSectorSize = extraReader.uint32();
-            map.XPadEnd = extraReader.read(52);
+            this.XPadStart = bytes ? extraReader.read(64) : new Array(64).fill(0);
+            this.XSpriteSize = bytes ? extraReader.uint32() : BLM.XSpriteSize;
+            this.XWallSize = bytes ? extraReader.uint32() : BLM.XWallSize;
+            this.XSectorSize = bytes ? extraReader.uint32() : BLM.XSectorSize;
+            this.XPadEnd = bytes ? extraReader.read(52) : new Array(52).fill(0);
         }
 
         // sky offsets
-        map.SkyOffsets = new Array((1 << map.SkyBits));
+        this.SkyOffsets = new Array(bytes ? (1 << this.SkyBits) : 0);
 
         // read sky bytes (read 2 bytes per offset because it is a int16 array)
-        let skyBytes = reader.read(map.SkyOffsets.length * 2);
+        let skyBytes = bytes ? reader.read(this.SkyOffsets.length * 2) : [];
 
         // check if sky bytes needs to be decrypted
-        if (map.byte1A76C8) {
+        if (this.byte1A76C8) {
 
             // decrypt sky bytes
-            skyBytes = BLM.crypt(skyBytes, map.SkyOffsets.length * 2);
+            skyBytes = Build.Scripts.ENCXOR.Compute(skyBytes, {
+                seed: this.SkyOffsets.length * 2
+            });
 
         }
 
         // read sky offsets (int16 array)
-        for (let i = 0; i < map.SkyOffsets.length; i++) {
-            map.SkyOffsets[i] = skyBytes[i*2] << 0 | skyBytes[(i*2)+1] << 8;
+        for (let i = 0; i < this.SkyOffsets.length; i++) {
+            this.SkyOffsets[i] = skyBytes[i*2] << 0 | skyBytes[(i*2)+1] << 8;
         }
 
         // read sectors
-        for (let i = 0; i < map.Sectors.length; i++) {
+        for (let i = 0; i < this.Sectors.length; i++) {
 
             // read sector bytes
             let sectorBytes = reader.read(BLM.SectorSize);
 
             // check if sector bytes needs to be decrypted
-            if (map.byte1A76C8) {
+            if (this.byte1A76C8) {
 
                 // decrypt sector bytes
-                sectorBytes = BLM.crypt(sectorBytes, map.Revision * BLM.SectorSize);
+                sectorBytes = Build.Scripts.ENCXOR.Compute(sectorBytes, {
+                    seed: this.Revision * BLM.SectorSize
+                });
 
             }
 
@@ -169,7 +131,7 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             const sectorReader = new Build.Scripts.ByteReader(sectorBytes);
 
             // read sector struct
-            map.Sectors[i] = {
+            this.Sectors[i] = {
                 wallptr: sectorReader.int16(),
                 wallnum: sectorReader.int16(),
                 ceilingz: sectorReader.int32(),
@@ -196,28 +158,30 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             };
 
             // check if sector extra needs to be read
-            if (map.Sectors[i].extra > 0) {
+            if (this.Sectors[i].extra > 0) {
 
                 // TODO => https://github.com/clipmove/NotBlood/blob/master/source/blood/src/db.cpp#L1852
-                map.Sectors[i].xsector = reader.read(map.byte1A76C8 ? map.XSectorSize : BLM.XSectorSize);
+                this.Sectors[i].xsector = reader.read(this.byte1A76C8 ? this.XSectorSize : BLM.XSectorSize);
 
             }
 
         }
 
         // read walls
-        for (let i = 0; i < map.Walls.length; i++) {
+        for (let i = 0; i < this.Walls.length; i++) {
 
             // read wall bytes
             let wallBytes = reader.read(BLM.WallSize);
 
             // check if wall bytes needs to be decrypted
-            if (map.byte1A76C8) {
+            if (this.byte1A76C8) {
 
                 // decrypt wall bytes
                 // yeah, this part uses sectorsize for some reason
                 // reference: https://github.com/clipmove/NotBlood/blob/master/source/blood/src/db.cpp#L1974
-                wallBytes = BLM.crypt(wallBytes, (map.Revision * BLM.SectorSize) | BLM.NewKey);
+                wallBytes = Build.Scripts.ENCXOR.Compute(wallBytes, {
+                    seed: (this.Revision * BLM.SectorSize) | BLM.NewKey
+                });
 
             }
 
@@ -225,7 +189,7 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             const wallReader = new Build.Scripts.ByteReader(wallBytes);
 
             // read wall struct
-            map.Walls[i] = {
+            this.Walls[i] = {
                 x: wallReader.int32(),
                 y: wallReader.int32(),
                 point2: wallReader.int16(),
@@ -246,26 +210,28 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             };
 
             // check if wall extra needs to be read
-            if (map.Walls[i].extra > 0) {
+            if (this.Walls[i].extra > 0) {
 
                 // TODO => https://github.com/clipmove/NotBlood/blob/master/source/blood/src/db.cpp#L1973
-                map.Walls[i].xwall = reader.read(map.byte1A76C8 ? map.XWallSize : BLM.XWallSize);
+                this.Walls[i].xwall = reader.read(this.byte1A76C8 ? this.XWallSize : BLM.XWallSize);
 
             }
 
         }
 
         // read sprites
-        for (let i = 0; i < map.Sprites.length; i++) {
+        for (let i = 0; i < this.Sprites.length; i++) {
 
             // read sprite bytes
             let spriteBytes = reader.read(BLM.SpriteSize);
 
             // check if sprite bytes needs to be decrypted
-            if (map.byte1A76C8) {
+            if (this.byte1A76C8) {
 
                 // decrypt sprite bytes
-                spriteBytes = BLM.crypt(spriteBytes, (map.Revision * BLM.SpriteSize) | BLM.NewKey);
+                spriteBytes = Build.Scripts.ENCXOR.Compute(spriteBytes, {
+                    seed: (this.Revision * BLM.SpriteSize) | BLM.NewKey
+                });
 
             }
 
@@ -273,7 +239,7 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             const spriteReader = new Build.Scripts.ByteReader(spriteBytes);
 
             // read wall struct
-            map.Sprites[i] = {
+            this.Sprites[i] = {
                 x: spriteReader.int32(),
                 y: spriteReader.int32(),
                 z: spriteReader.int32(),
@@ -300,34 +266,30 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             };
 
             // check if sprite extra needs to be read
-            if (map.Sprites[i].extra > 0) {
+            if (this.Sprites[i].extra > 0) {
 
                 // TODO => https://github.com/clipmove/NotBlood/blob/master/source/blood/src/db.cpp#L2060
-                map.Sprites[i].xsprite = reader.read(map.byte1A76C8 ? map.XSpriteSize : BLM.XSpriteSize);
+                this.Sprites[i].xsprite = reader.read(this.byte1A76C8 ? this.XSpriteSize : BLM.XSpriteSize);
 
             }
 
         }
 
         // read crc
-        map.CRC = reader.uint32();
-
-        // return filled map object
-        return map;
+        this.CRC = bytes ? reader.uint32() : 0;
 
     }
 
-    // transforms map object into byte array
-    static Serialize (map) {
+    Serialize () {
 
         // create byte writer
         const writer = new Build.Scripts.ByteWriter();
 
         // write BLM\x1a signature
-        writer.string(map.Signature, 4);
+        writer.string(this.Signature, 4);
         
         // write map version
-        writer.int16(map.Version);
+        writer.int16(this.Version);
 
         // create buffer for header bytes
         let headerBytes = [];
@@ -336,25 +298,27 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
         const headerWriter = new Build.Scripts.ByteWriter();
 
         // write map header bytes to local writer
-        headerWriter.int32(map.X);
-        headerWriter.int32(map.Y);
-        headerWriter.int32(map.Z);
-        headerWriter.int16(map.A);
-        headerWriter.int16(map.S);
-        headerWriter.int16(map.SkyBits);
-        headerWriter.int32(map.Visibility);
-        headerWriter.int32(map.SongId);
-        headerWriter.int8(map.Parallax);
-        headerWriter.int32(map.Revision);
-        headerWriter.int16(map.Sectors.length);
-        headerWriter.int16(map.Walls.length);
-        headerWriter.int16(map.Sprites.length);
+        headerWriter.int32(this.X);
+        headerWriter.int32(this.Y);
+        headerWriter.int32(this.Z);
+        headerWriter.int16(this.A);
+        headerWriter.int16(this.S);
+        headerWriter.int16(this.SkyBits);
+        headerWriter.int32(this.Visibility);
+        headerWriter.int32(this.SongId);
+        headerWriter.int8(this.Parallax);
+        headerWriter.int32(this.Revision);
+        headerWriter.int16(this.Sectors.length);
+        headerWriter.int16(this.Walls.length);
+        headerWriter.int16(this.Sprites.length);
 
         // check if header bytes needs to be encrypted
-        if (map.byte1A76C7) {
+        if (this.byte1A76C7) {
 
             // encrypt header bytes
-            headerBytes = BLM.crypt(headerWriter.bytes, BLM.NewKey);
+            headerBytes = Build.Scripts.ENCXOR.Compute(headerWriter.bytes, {
+                seed: BLM.NewKey
+            });
 
         } else {
 
@@ -367,14 +331,16 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
         writer.write(headerBytes);
 
         // write extra flags header
-        if (map.byte1A76C8) {
+        if (this.byte1A76C8) {
             const extraWriter = new Build.Scripts.ByteWriter();
-            extraWriter.write(map.XPadStart); // 64
-            extraWriter.int32(map.XSpriteSize);
-            extraWriter.int32(map.XWallSize);
-            extraWriter.int32(map.XSectorSize);
-            extraWriter.write(map.XPadEnd); // 52
-            writer.write(BLM.crypt(extraWriter.bytes, map.Walls.length));
+            extraWriter.write(this.XPadStart); // 64
+            extraWriter.int32(this.XSpriteSize);
+            extraWriter.int32(this.XWallSize);
+            extraWriter.int32(this.XSectorSize);
+            extraWriter.write(this.XPadEnd); // 52
+            writer.write(Build.Scripts.ENCXOR.Compute(extraWriter.bytes, {
+                seed: this.Walls.length
+            }));
         }
 
         // create buffer from sky bytes
@@ -384,15 +350,17 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
         const skyWriter = new Build.Scripts.ByteWriter();
 
         // write sky bytes to local writer
-        for (let i = 0; i < map.SkyOffsets.length; i++) {
-            skyWriter.int16(map.SkyOffsets[i]);            
+        for (let i = 0; i < this.SkyOffsets.length; i++) {
+            skyWriter.int16(this.SkyOffsets[i]);            
         }
 
         // check if sky bytes needs to be encrypted
-        if (map.byte1A76C8) {
+        if (this.byte1A76C8) {
 
             // encrypt sky bytes
-            skyBytes = BLM.crypt(skyWriter.bytes, map.SkyOffsets.length * 2);
+            skyBytes = Build.Scripts.ENCXOR.Compute(skyWriter.bytes, {
+                seed: this.SkyOffsets.length * 2
+            });
 
         } else {
 
@@ -405,42 +373,44 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
         writer.write(skyBytes);
 
         // write sectors
-        for (let i = 0; i < map.Sectors.length; i++) {
+        for (let i = 0; i < this.Sectors.length; i++) {
 
             let sectorBytes = [];
 
             const sectorWriter = new Build.Scripts.ByteWriter();
 
             // write sector struct
-            sectorWriter.int16(map.Sectors[i].wallptr);
-            sectorWriter.int16(map.Sectors[i].wallnum);
-            sectorWriter.int32(map.Sectors[i].ceilingz);
-            sectorWriter.int32(map.Sectors[i].floorz);
-            sectorWriter.int16(map.Sectors[i].ceilingstat);
-            sectorWriter.int16(map.Sectors[i].floorstat);
-            sectorWriter.int16(map.Sectors[i].ceilingpicnum);
-            sectorWriter.int16(map.Sectors[i].ceilingheinum);
-            sectorWriter.int8(map.Sectors[i].ceilingshade);
-            sectorWriter.int8(map.Sectors[i].ceilingpal);
-            sectorWriter.int8(map.Sectors[i].ceilingxpanning);
-            sectorWriter.int8(map.Sectors[i].ceilingypanning);
-            sectorWriter.int16(map.Sectors[i].floorpicnum);
-            sectorWriter.int16(map.Sectors[i].floorheinum);
-            sectorWriter.int8(map.Sectors[i].floorshade);
-            sectorWriter.int8(map.Sectors[i].floorpal);
-            sectorWriter.int8(map.Sectors[i].floorxpanning);
-            sectorWriter.int8(map.Sectors[i].floorypanning);
-            sectorWriter.int8(map.Sectors[i].visibility);
-            sectorWriter.int8(map.Sectors[i].filler);
-            sectorWriter.int16(map.Sectors[i].lotag);
-            sectorWriter.int16(map.Sectors[i].hitag);
-            sectorWriter.int16(map.Sectors[i].extra);
+            sectorWriter.int16(this.Sectors[i].wallptr);
+            sectorWriter.int16(this.Sectors[i].wallnum);
+            sectorWriter.int32(this.Sectors[i].ceilingz);
+            sectorWriter.int32(this.Sectors[i].floorz);
+            sectorWriter.int16(this.Sectors[i].ceilingstat);
+            sectorWriter.int16(this.Sectors[i].floorstat);
+            sectorWriter.int16(this.Sectors[i].ceilingpicnum);
+            sectorWriter.int16(this.Sectors[i].ceilingheinum);
+            sectorWriter.int8(this.Sectors[i].ceilingshade);
+            sectorWriter.int8(this.Sectors[i].ceilingpal);
+            sectorWriter.int8(this.Sectors[i].ceilingxpanning);
+            sectorWriter.int8(this.Sectors[i].ceilingypanning);
+            sectorWriter.int16(this.Sectors[i].floorpicnum);
+            sectorWriter.int16(this.Sectors[i].floorheinum);
+            sectorWriter.int8(this.Sectors[i].floorshade);
+            sectorWriter.int8(this.Sectors[i].floorpal);
+            sectorWriter.int8(this.Sectors[i].floorxpanning);
+            sectorWriter.int8(this.Sectors[i].floorypanning);
+            sectorWriter.int8(this.Sectors[i].visibility);
+            sectorWriter.int8(this.Sectors[i].filler);
+            sectorWriter.int16(this.Sectors[i].lotag);
+            sectorWriter.int16(this.Sectors[i].hitag);
+            sectorWriter.int16(this.Sectors[i].extra);
 
             // check if sector bytes needs to be encrypted
-            if (map.byte1A76C8) {
+            if (this.byte1A76C8) {
 
                 // encrypt sector bytes
-                sectorBytes = BLM.crypt(sectorWriter.bytes, map.Revision * BLM.SectorSize);
+                sectorBytes = Build.Scripts.ENCXOR.Compute(sectorWriter.bytes, {
+                    seed: this.Revision * BLM.SectorSize
+                });
 
             } else {
 
@@ -453,48 +423,50 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             writer.write(sectorBytes);
 
             // check if sector extra needs to be written
-            if (map.Sectors[i].extra > 0) {
+            if (this.Sectors[i].extra > 0) {
 
                 // TODO => https://github.com/clipmove/NotBlood/blob/master/source/blood/src/db.cpp#L1852
-                writer.write(map.Sectors[i].xsector);
+                writer.write(this.Sectors[i].xsector);
 
             }
 
         }
 
         // write walls
-        for (let i = 0; i < map.Walls.length; i++) {
+        for (let i = 0; i < this.Walls.length; i++) {
 
             let wallBytes = [];
 
             const wallWriter = new Build.Scripts.ByteWriter();
 
             // write wall struct
-            wallWriter.int32(map.Walls[i].x);
-            wallWriter.int32(map.Walls[i].y);
-            wallWriter.int16(map.Walls[i].point2);
-            wallWriter.int16(map.Walls[i].nextwall);
-            wallWriter.int16(map.Walls[i].nextsector);
-            wallWriter.int16(map.Walls[i].cstat);
-            wallWriter.int16(map.Walls[i].picnum);
-            wallWriter.int16(map.Walls[i].overpicnum);
-            wallWriter.int8(map.Walls[i].shade);
-            wallWriter.int8(map.Walls[i].pal);
-            wallWriter.int8(map.Walls[i].xrepeat);
-            wallWriter.int8(map.Walls[i].yrepeat);
-            wallWriter.int8(map.Walls[i].xpanning);
-            wallWriter.int8(map.Walls[i].ypanning);
-            wallWriter.int16(map.Walls[i].lotag);
-            wallWriter.int16(map.Walls[i].hitag);
-            wallWriter.int16(map.Walls[i].extra);
+            wallWriter.int32(this.Walls[i].x);
+            wallWriter.int32(this.Walls[i].y);
+            wallWriter.int16(this.Walls[i].point2);
+            wallWriter.int16(this.Walls[i].nextwall);
+            wallWriter.int16(this.Walls[i].nextsector);
+            wallWriter.int16(this.Walls[i].cstat);
+            wallWriter.int16(this.Walls[i].picnum);
+            wallWriter.int16(this.Walls[i].overpicnum);
+            wallWriter.int8(this.Walls[i].shade);
+            wallWriter.int8(this.Walls[i].pal);
+            wallWriter.int8(this.Walls[i].xrepeat);
+            wallWriter.int8(this.Walls[i].yrepeat);
+            wallWriter.int8(this.Walls[i].xpanning);
+            wallWriter.int8(this.Walls[i].ypanning);
+            wallWriter.int16(this.Walls[i].lotag);
+            wallWriter.int16(this.Walls[i].hitag);
+            wallWriter.int16(this.Walls[i].extra);
 
             // check if wall bytes needs to be encrypted
-            if (map.byte1A76C8) {
+            if (this.byte1A76C8) {
 
                 // encrypt wall bytes
                 // yeah, this part uses sectorsize for some reason
                 // reference: https://github.com/clipmove/NotBlood/blob/master/source/blood/src/db.cpp#L1974
-                wallBytes = BLM.crypt(wallWriter.bytes, (map.Revision * BLM.SectorSize) | BLM.NewKey);
+                wallBytes = Build.Scripts.ENCXOR.Compute(wallWriter.bytes, {
+                    seed: (this.Revision * BLM.SectorSize) | BLM.NewKey
+                });
 
             } else {
 
@@ -507,52 +479,54 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             writer.write(wallBytes);
 
             // check if wall extra needs to be written
-            if (map.Walls[i].extra > 0) {
+            if (this.Walls[i].extra > 0) {
 
                 // TODO => https://github.com/clipmove/NotBlood/blob/master/source/blood/src/db.cpp#L1852
-                writer.write(map.Walls[i].xwall);
+                writer.write(this.Walls[i].xwall);
 
             }
 
         }
 
         // write sprites
-        for (let i = 0; i < map.Sprites.length; i++) {
+        for (let i = 0; i < this.Sprites.length; i++) {
 
             let spriteBytes = [];
 
             const spriteWriter = new Build.Scripts.ByteWriter();
 
             // write sprite struct
-            spriteWriter.int32(map.Sprites[i].x);
-            spriteWriter.int32(map.Sprites[i].y);
-            spriteWriter.int32(map.Sprites[i].z);
-            spriteWriter.int16(map.Sprites[i].cstat);
-            spriteWriter.int16(map.Sprites[i].picnum);
-            spriteWriter.int8(map.Sprites[i].shade);
-            spriteWriter.int8(map.Sprites[i].pal);
-            spriteWriter.int8(map.Sprites[i].clipdist);
-            spriteWriter.int8(map.Sprites[i].filler);
-            spriteWriter.int8(map.Sprites[i].xrepeat);
-            spriteWriter.int8(map.Sprites[i].yrepeat);
-            spriteWriter.int8(map.Sprites[i].xoffset);
-            spriteWriter.int8(map.Sprites[i].yoffset);
-            spriteWriter.int16(map.Sprites[i].sectnum);
-            spriteWriter.int16(map.Sprites[i].statnum);
-            spriteWriter.int16(map.Sprites[i].ang);
-            spriteWriter.int16(map.Sprites[i].owner);
-            spriteWriter.int16(map.Sprites[i].xvel);
-            spriteWriter.int16(map.Sprites[i].yvel);
-            spriteWriter.int16(map.Sprites[i].zvel);
-            spriteWriter.int16(map.Sprites[i].lotag);
-            spriteWriter.int16(map.Sprites[i].hitag);
-            spriteWriter.int16(map.Sprites[i].extra);
+            spriteWriter.int32(this.Sprites[i].x);
+            spriteWriter.int32(this.Sprites[i].y);
+            spriteWriter.int32(this.Sprites[i].z);
+            spriteWriter.int16(this.Sprites[i].cstat);
+            spriteWriter.int16(this.Sprites[i].picnum);
+            spriteWriter.int8(this.Sprites[i].shade);
+            spriteWriter.int8(this.Sprites[i].pal);
+            spriteWriter.int8(this.Sprites[i].clipdist);
+            spriteWriter.int8(this.Sprites[i].filler);
+            spriteWriter.int8(this.Sprites[i].xrepeat);
+            spriteWriter.int8(this.Sprites[i].yrepeat);
+            spriteWriter.int8(this.Sprites[i].xoffset);
+            spriteWriter.int8(this.Sprites[i].yoffset);
+            spriteWriter.int16(this.Sprites[i].sectnum);
+            spriteWriter.int16(this.Sprites[i].statnum);
+            spriteWriter.int16(this.Sprites[i].ang);
+            spriteWriter.int16(this.Sprites[i].owner);
+            spriteWriter.int16(this.Sprites[i].xvel);
+            spriteWriter.int16(this.Sprites[i].yvel);
+            spriteWriter.int16(this.Sprites[i].zvel);
+            spriteWriter.int16(this.Sprites[i].lotag);
+            spriteWriter.int16(this.Sprites[i].hitag);
+            spriteWriter.int16(this.Sprites[i].extra);
 
             // check if sprite bytes needs to be encrypted
-            if (map.byte1A76C8) {
+            if (this.byte1A76C8) {
 
                 // encrypt sprite bytes
-                spriteBytes = BLM.crypt(spriteWriter.bytes, (map.Revision * BLM.SpriteSize) | BLM.NewKey);
+                spriteBytes = Build.Scripts.ENCXOR.Compute(spriteWriter.bytes, {
+                    seed: (this.Revision * BLM.SpriteSize) | BLM.NewKey
+                });
 
             } else {
 
@@ -565,17 +539,17 @@ Build.Models.Map.BLM = class BLM extends Build.Models.Map {
             writer.write(spriteBytes);
 
             // check if sprite extra needs to be written
-            if (map.Sprites[i].extra > 0) {
+            if (this.Sprites[i].extra > 0) {
 
                 // TODO => https://github.com/clipmove/NotBlood/blob/master/source/blood/src/db.cpp#L1852
-                writer.write(map.Sprites[i].xsprite);
+                writer.write(this.Sprites[i].xsprite);
 
             }
 
         }
 
         // write crc
-        writer.int32(map.CRC);
+        writer.int32(this.CRC);
         
         // return map bytes
         return writer.bytes;

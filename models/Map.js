@@ -1,37 +1,16 @@
 Build.Models.Map = class Map {
 
-    // create empty map object based on type
-    constructor(type) {
-        if (type) {
-            switch (type) {
-                case Build.Enums.MapType.MAP: return new Build.Models.Map.MAP();
-                case Build.Enums.MapType.BLM: return new Build.Models.Map.BLM();
-            }
-        }  
+    constructor (bytes) {
+        switch (bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) {
+            case 0x00000007: return new Build.Models.Map.MAP(bytes); // MAP
+            case 0x00000008: return new Build.Models.Map.MAP(bytes); // MAP
+            case 0x00000009: return new Build.Models.Map.MAP(bytes); // MAP
+            case 0x1A4D4C42: return new Build.Models.Map.BLM(bytes); // BLM\x1a
+        }
     }
 
-    // transforms map object into byte array
-    static Serialize (map) {
-
-        // this looks stupid but it makes it easier to use outside when bundled into lib format
-        switch (map.constructor.name) {
-            case "MAP": return Build.Models.Map.MAP.Serialize(map);
-            case "BLM": return Build.Models.Map.BLM.Serialize(map);
-        }
-
-    }
-
-    // transforms byte array into map object
-    static Unserialize (bytes) {
-
-        // blood map
-        if (String.fromCharCode(...bytes.slice(0, 4)) === "BLM\x1a") {
-            return Build.Models.Map.BLM.Unserialize(bytes);
-        }
-
-        // common map
-        return Build.Models.Map.MAP.Unserialize(bytes);
-
+    Serialize () {
+        throw new Error("Method not implemented.");
     }
 
 }

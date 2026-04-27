@@ -8,7 +8,7 @@ Build.Models.Art = class Art {
         // check for ion fury signature
         if (String.fromCharCode(...bytes.slice(0, 8)) === "BUILDART") {
             this.Signature = reader.string(8);
-            console.log("reading ion fury art, this may take a while...");
+            console.log("Reading Ion Fury ART, this may take a while...");
         }
 
         this.Version = reader.uint32();
@@ -63,7 +63,7 @@ Build.Models.Art = class Art {
         // check for ion fury signature
         if (this.Signature) {
             writer.string(this.Signature, this.Signature.length);
-            console.log("writing ion fury art, this may take a while...");
+            console.log("Writing Ion Fury ART, this may take a while...");
         }
 
         writer.int32(this.Version);

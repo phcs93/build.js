@@ -84,7 +84,7 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
         });
     }
 
-    Serialize () {
+    Serialize() {
 
         // file content size offsets (initialize pointing to after the rff header)
         this.FileHeadersOffset = 32;

@@ -1,34 +1,25 @@
 // reference: https://moddingwiki.shikadi.net/wiki/Duke_Nukem_3D_Palette_Format
 Build.Models.Lookup.DAT = class DAT extends Build.Models.Lookup {
 
-    constructor() {
-        super();
-        this.Swaps = new Array(0).fill({
-            number: 0, 
-            table:  new Array(256).fill(0)
-        });
-        this.AlternativePalettes = new Array(0).fill(new Array(256).fill({r: 0, g: 0, b: 0}));
-    }
+    constructor(bytes) {
 
-    static Unserialize(bytes) {
+        super();
 
         const reader = new Build.Scripts.ByteReader(bytes);
 
-        const dat = new Build.Models.Lookup.DAT();
+        this.Swaps = new Array(bytes ? reader.uint8() : 0);
 
-        dat.Swaps = new Array(reader.uint8());
-
-        for (let i = 0; i < dat.Swaps.length; i++) {        
-            dat.Swaps[i] = {
+        for (let i = 0; i < this.Swaps.length; i++) {
+            this.Swaps[i] = {
                 number: reader.uint8(),
                 table: new Array(256).fill(0).map(() => reader.uint8())
             };
         }
 
-        dat.AlternativePalettes = new Array((bytes.length - reader.index) / (256*3));
+        this.AlternativePalettes = new Array(bytes ? (bytes.length - reader.index) / (256*3) : 0);
 
-        for (let i = 0; i < dat.AlternativePalettes.length; i++) {        
-            dat.AlternativePalettes[i] = new Array(256).fill(0).map(() => ({
+        for (let i = 0; i < this.AlternativePalettes.length; i++) {        
+            this.AlternativePalettes[i] = new Array(256).fill(0).map(() => ({
                 // scale from 0...64 to 0...256 (DOS limitation)
                 r: (reader.uint8() * 255) / 64,
                 g: (reader.uint8() * 255) / 64,
@@ -36,24 +27,22 @@ Build.Models.Lookup.DAT = class DAT extends Build.Models.Lookup {
             }));   
         }
 
-        return dat;
-
     }
 
-    static Serialize(dat) {
+    Serialize() {
 
         const writer = new Build.Scripts.ByteWriter();
 
-        writer.int8(dat.Swaps.length);
+        writer.int8(this.Swaps.length);
 
-        for (const swap of dat.Swaps) {
+        for (const swap of this.Swaps) {
             writer.int8(swap.number);
             for (const value of swap.table) {
                 writer.int8(value);
             }
         }
 
-        for (const alternativePalette of dat.AlternativePalettes) {
+        for (const alternativePalette of this.AlternativePalettes) {
             for (const color of alternativePalette) {
                 // scale from 0...256 to 0...64 (DOS limitation)
                 writer.int8(Math.round((color.r * 64) / 255));

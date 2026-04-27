@@ -77,7 +77,7 @@ Build.Models.Storage.PK3 = class PK3 extends Build.Models.Storage {
         });
     }
 
-    Serialize () {
+    Serialize() {
 
         const writer = new Build.Scripts.ByteWriter();
 
