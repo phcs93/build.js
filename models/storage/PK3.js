@@ -9,13 +9,13 @@ Build.Models.Storage.PK3 = class PK3 extends Build.Models.Storage {
 
         super([]);
 
-        const reader = new Build.Scripts.ByteReader(bytes);
-
-        console.log(`reading pk3 files, this may take a minute...`);        
+        const reader = new Build.Scripts.ByteReader(bytes);    
 
         this.Files = [];
 
-        while (!bytes && reader.index < bytes.length) {
+        console.log("Reading PK3 file, this may take a while...");
+
+        while (bytes && reader.index < bytes.length) {
 
             // if next 4 bytes aren't a pk3 signature -> exit
             if (String.fromCharCode(...bytes.slice(reader.index, reader.index + 4)) !== "PK\x03\x04") break;
@@ -53,41 +53,56 @@ Build.Models.Storage.PK3 = class PK3 extends Build.Models.Storage {
 
         }
 
-        console.log(`done reading pk3 files!`);
-
         // keep "garbage" at the end of file (central directory?)
         this.Garbage = bytes ? reader.read(bytes.length - reader.index) : [];
 
+    }
+
+    AddFile(name, bytes) {
+        this.Files.push({
+            signature: "PK\x03\x04",
+            version: 20,
+            flags: 0,
+            compression: 8, // always compress? sounds good to me...
+            time: 0, // will se set in Serialize
+            date: 0, // will be set in Serialize
+            crc32: 0, // will be set in Serialize
+            compressedSize: 0, // will be set in Serialize
+            uncompressedSize: bytes.length,
+            nameLength: name.length,
+            extraLength: 0,
+            name: name,
+            extra: [],
+            bytes: bytes
+        });
     }
 
     Serialize () {
 
         const writer = new Build.Scripts.ByteWriter();
 
-        console.log(`writing pk3 files, this may take a minute...`);
+        console.log("Writing PK3 file, this may take a while...");
 
         for (const i in this.Files) {
 
             const file = this.Files[i];
 
-            let compressedBytes = file.bytes;
+            const crc32 = Build.Scripts.CRC32.Compute(file.bytes);
+
+            let date = 0;
+            let time = 0;
+            let compressedBytes = file.bytes;            
 
             if (file.compression === 8) {
-                // generate crc32 for current uncompressed file bytes
-                const newcrc = Build.Scripts.CRC32.Compute(file.bytes);
-                // compare crc32 of original file with new file
-                if (newcrc !== file.crc32) {
-                    // log
-                    console.log(`compressing ${file.name} [${file.bytes.length} bytes]...`);
-                    // if crc is different -> compress new file
+                // check if crc is not present in dictionary
+                if (!this.#OriginalCompressedBytes[crc32]) {
+                    // if crc is not present in original bytes dictionary -> compress file bytes
                     compressedBytes = new Uint8Array(Build.Scripts.FFlate.deflateSync(compressedBytes));
-                    // update crc
-                    file.crc32 = newcrc;
-                    // update compressedSize
-                    file.compressedSize = compressedBytes.length;
+                    // also set new date and time
+                    ({ date, time } = Build.Scripts.DateTime.EncodeDosDateTime(new Date()));
                 } else {
-                    // if crc is equal -> just reuse original compressed file bytes
-                    compressedBytes = this.#OriginalCompressedBytes[file.crc32];
+                    // if crc is present -> just reuse original compressed file bytes
+                    compressedBytes = this.#OriginalCompressedBytes[crc32];
                 }
             }
 
@@ -97,8 +112,8 @@ Build.Models.Storage.PK3 = class PK3 extends Build.Models.Storage {
             writer.int16(file.compression);
             writer.int16(file.time);
             writer.int16(file.date);
-            writer.int32(file.crc32);
-            writer.int32(file.compressedSize);
+            writer.int32(crc32);
+            writer.int32(compressedBytes.length);
             writer.int32(file.bytes.length);
             writer.int16(file.name.length);
             writer.int16(file.extra.length);
@@ -107,8 +122,6 @@ Build.Models.Storage.PK3 = class PK3 extends Build.Models.Storage {
             writer.write(compressedBytes);
 
         }
-
-        console.log(`done writing pk3 files!`);
 
         // write back "garbage" at the end (central directory?)
         writer.write(this.Garbage);

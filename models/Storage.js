@@ -11,11 +11,11 @@ Build.Models.Storage = class Storage {
     }
 
     AddFile (name, bytes) {
-        throw new Error(`Method "${arguments.callee.name}()" not implemented.`);
+        throw new Error("Method not implemented.");
     }
         
     Serialize () {
-        throw new Error(`Method "${arguments.callee.name}()" not implemented.`);
+        throw new Error("Method not implemented.");
     }
 
 }

@@ -1,12 +1,8 @@
-// reference: https://github.com/camoto-project/gamearchivejs/blob/master/formats/arc-rff-blood-common.js
+// reference: https://moddingwiki.shikadi.net/wiki/RFF_Format
 Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
 
-    // sizes
     static HeaderSize = 32;
     static FileHeaderSize = 48;
-
-    // util
-    static toUnixTime = d => d.valueOf() / 1000 - new Date().getTimezoneOffset() * 60;
 
     constructor(bytes) {
 
@@ -52,7 +48,7 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
                 id: fileHeaderReader.uint32(),
                 bytes: []
             };
-            // just for better readability -> this needs to be undone when writing back
+            // just for better readability -> this will be undone when writing back
             this.Files[i].name += `.${this.Files[i].type}`;
         }
 
@@ -74,6 +70,21 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
             }
         }
 
+    }
+
+    AddFile(name, bytes) {
+        this.Files.push({
+            cache: new Array(16).fill(0), // unused
+            offset: 0, // will set in Serialize
+            size: bytes.length,
+            packedSize: 0, // unused
+            time: Build.Scripts.DateTime.ToUnixDateTime(new Date()),
+            flags: 0, // lets not encrypt the file because, why should it be?
+            type: null, // will be set in Serialize
+            name: name,
+            id: 0, // unused (it seems)
+            bytes: bytes
+        });
     }
 
     Serialize () {
@@ -120,7 +131,7 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
             fileHeaderWriter.int32(this.Files[i].offset);
             fileHeaderWriter.int32(this.Files[i].size);
             fileHeaderWriter.int32(this.Files[i].packedSize);
-            fileHeaderWriter.int32(this.Files[i].time || RFF.toUnixTime(new Date()));
+            fileHeaderWriter.int32(this.Files[i].time || Build.Scripts.DateTime.ToUnixDateTime(new Date()));
             fileHeaderWriter.int8(this.Files[i].flags);
             fileHeaderWriter.string(this.Files[i].name.split(".")[1], 3);
             fileHeaderWriter.string(this.Files[i].name.split(".")[0], 8);
@@ -135,7 +146,7 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
                 seed: this.FileHeadersOffset & 0xFF,
                 offset: 0,
                 limit: 0,
-                shift: 1
+                shift: 1 // used by my custom hybrid implementation
             }));
         }
 

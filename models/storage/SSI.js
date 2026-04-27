@@ -47,6 +47,16 @@ Build.Models.Storage.SSI = class SSI extends Build.Models.Storage {
         
     }
 
+    AddFile(name, bytes) {
+        this.Files.push({
+            length: name.length,
+            name: name,
+            size: bytes.length,
+            fill: new Array(34+1+69).fill(0),
+            bytes: bytes
+        });
+    }
+
     Serialize() {
 
         const writer = new Build.Scripts.ByteWriter();

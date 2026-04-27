@@ -1,7 +1,7 @@
 // reference: https://moddingwiki.shikadi.net/wiki/GRP_Format
 Build.Models.Storage.GRP = class GRP extends Build.Models.Storage {
 
-    constructor (bytes) {
+    constructor(bytes) {
         super([]);
         const reader = new Build.Scripts.ByteReader(bytes);
         this.Signature = bytes ? reader.string(12) : "KenSilverman";
