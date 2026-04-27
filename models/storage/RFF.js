@@ -1,9 +1,6 @@
 // reference: https://moddingwiki.shikadi.net/wiki/RFF_Format
 Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
 
-    static HeaderSize = 32;
-    static FileHeaderSize = 48;
-
     constructor(bytes) {
 
         super([]);    
@@ -17,7 +14,7 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
         this.Files = new Array(bytes ? reader.uint32() : 0);
         this.Padding2 = bytes ? reader.read(16) : new Array(16).fill(0);
 
-        let fileHeadersBytes = reader.bytes.slice(this.FileHeadersOffset, this.FileHeadersOffset + this.Files.length * RFF.FileHeaderSize);
+        let fileHeadersBytes = reader.bytes.slice(this.FileHeadersOffset, this.FileHeadersOffset + this.Files.length * 48);
 
         // 0x0200 - shareware 0.99 (CD version) - FAT is not encrypted
         // 0x0300 - registered 1.00 - FAT is encrypted
@@ -90,7 +87,7 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
     Serialize () {
 
         // file content size offsets (initialize pointing to after the rff header)
-        this.FileHeadersOffset = RFF.HeaderSize;
+        this.FileHeadersOffset = 32;
 
         // process file contents before performing any calculations
         for (let i = 0; i < this.Files.length; i++) {

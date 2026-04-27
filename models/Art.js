@@ -1,40 +1,26 @@
 // reference: https://moddingwiki.shikadi.net/wiki/ART_Format_(Build)
 Build.Models.Art = class Art {
-
-    // TO-DO => figure out if there is a simpler way to do this (check xduke source code)
-    static isolate = (v, s, e) => (v >> s) & (1 << e - s + 1) - 1;
-    static attach = (v, s, e, n) => (v & ~(((1 << (e - s + 1)) - 1) << s)) | ((n & ((1 << (e - s + 1)) - 1)) << s);
     
-    constructor () {
-        this.Version = 1;
-        this.Length = 0;
-        this.Start = 0;
-        this.End = 0;
-        this.Tiles = [];
-    }
-
-    static Unserialize (bytes) {
-
-        const art = new Art();
+    constructor (bytes) {
 
         const reader = new Build.Scripts.ByteReader(bytes);
 
         // check for ion fury signature
         if (String.fromCharCode(...bytes.slice(0, 8)) === "BUILDART") {
-            art.Signature = reader.string(8);
-            console.log("reading ion fury art, this may take a minute...");
+            this.Signature = reader.string(8);
+            console.log("reading ion fury art, this may take a while...");
         }
 
-        art.Version = reader.uint32();
-        art.Length = reader.uint32();
-        art.Start = reader.uint32();
-        art.End = reader.uint32();
+        this.Version = reader.uint32();
+        this.Length = reader.uint32();
+        this.Start = reader.uint32();
+        this.End = reader.uint32();
 
-        const numtiles = art.End - art.Start + 1;
+        const numtiles = this.End - this.Start + 1;
 
-        art.Tiles = new Array(numtiles);
+        this.Tiles = new Array(numtiles);
 
-        for (let i = 0; i < numtiles; i++) art.Tiles[i] = {};
+        for (let i = 0; i < numtiles; i++) this.Tiles[i] = {};
 
         const sizex = [];
 
@@ -45,87 +31,75 @@ Build.Models.Art = class Art {
         for (let i = 0; i < numtiles; i++) sizey.push(reader.uint16());
     
         for (let i = 0; i < numtiles; i++) {
-            const animation = reader.uint32();
-            art.Tiles[i].animation = {
-                frames: Art.isolate(animation, 0, 5) & 0x3F, // uint6
-                type: Art.isolate(animation, 6, 7), // int2
-                offsetX: (Art.isolate(animation, 8, 15) << 24) >> 24, // int8
-                offsetY: (Art.isolate(animation, 16, 23) << 24) >> 24, // int8
-                speed: Art.isolate(animation, 24, 27) & 0x0F, // uint4
-                unused: Art.isolate(animation, 28, 31) // int4
+            const bitreader = new Build.Scripts.BitReader(reader.uint32());
+            this.Tiles[i].animation = {
+                frames: bitreader.uint(6),
+                type: bitreader.uint(2),
+                offsetX: bitreader.int(8),
+                offsetY: bitreader.int(8),
+                speed: bitreader.uint(4),
+                unused: bitreader.uint(4)
             };
         }
 
         for (let i = 0; i < numtiles; i++) {
-            art.Tiles[i].pixels = [];
+            this.Tiles[i].pixels = [];
             for (let x = 0; x < sizex[i] ; x++) {
-                art.Tiles[i].pixels[x] = [];
+                this.Tiles[i].pixels[x] = [];
                 for (let y = 0; y < sizey[i]; y++) {
-                    art.Tiles[i].pixels[x][y] = reader.uint8();
+                    this.Tiles[i].pixels[x][y] = reader.uint8();
                 }
             }
         }
 
-        // check for ion fury signature
-        if (art.Signature) {
-            console.log("done reading ion fury art!");
-        }
-
-        return art;
-
     }
 
-    static Serialize(art) {
+    Serialize() {
 
-        const numtiles = art.End - art.Start + 1
+        const numtiles = this.End - this.Start + 1
 
         const writer = new Build.Scripts.ByteWriter();
 
         // check for ion fury signature
-        if (art.Signature) {
-            writer.string(art.Signature, art.Signature.length);
-            console.log("writing ion fury art, this may take a minute...");
+        if (this.Signature) {
+            writer.string(this.Signature, this.Signature.length);
+            console.log("writing ion fury art, this may take a while...");
         }
 
-        writer.int32(art.Version);
-        writer.int32(art.Length);
-        writer.int32(art.Start);
-        writer.int32(art.End);
+        writer.int32(this.Version);
+        writer.int32(this.Length);
+        writer.int32(this.Start);
+        writer.int32(this.End);
         
-        for (let i = 0; i < art.Tiles.length; i++) {
-            writer.int16(art.Tiles[i].pixels.length);
+        for (let i = 0; i < this.Tiles.length; i++) {
+            writer.int16(this.Tiles[i].pixels.length);
         }
 
-        for (let i = 0; i < art.Tiles.length; i++) {
-            writer.int16(art.Tiles[i].pixels.length > 0 ? art.Tiles[i].pixels[0].length : 0);
+        for (let i = 0; i < this.Tiles.length; i++) {
+            writer.int16(this.Tiles[i].pixels.length > 0 ? this.Tiles[i].pixels[0].length : 0);
         }        
 
-        for (let i = 0; i < art.Tiles.length; i++) {
-            let animation = 0;
-            animation = Art.attach(animation, 0, 5, art.Tiles[i].animation.frames);
-            animation = Art.attach(animation, 6, 7, art.Tiles[i].animation.type);
-            animation = Art.attach(animation, 8, 15, art.Tiles[i].animation.offsetX);
-            animation = Art.attach(animation, 16, 23, art.Tiles[i].animation.offsetY);
-            animation = Art.attach(animation, 24, 27, art.Tiles[i].animation.speed);
-            animation = Art.attach(animation, 28, 31, art.Tiles[i].animation.unused);
-            writer.int32(animation);
+        for (let i = 0; i < this.Tiles.length; i++) {
+            const bitwriter = new Build.Scripts.BitWriter();
+            bitwriter.uint(6, this.Tiles[i].animation.frames);
+            bitwriter.uint(2, this.Tiles[i].animation.type);
+            bitwriter.int(8, this.Tiles[i].animation.offsetX);
+            bitwriter.int(8, this.Tiles[i].animation.offsetY);
+            bitwriter.uint(4, this.Tiles[i].animation.speed);
+            bitwriter.uint(4, this.Tiles[i].animation.unused);
+            writer.int32(bitwriter.value);
         }
 
-        for (let i = 0; i < art.Tiles.length; i++) {
-            for (let x = 0; x < art.Tiles[i].pixels.length ; x++) {
-                for (let y = 0; y < art.Tiles[i].pixels[x].length; y++) {
-                    writer.int8(art.Tiles[i].pixels[x][y]);
+        for (let i = 0; i < this.Tiles.length; i++) {
+            for (let x = 0; x < this.Tiles[i].pixels.length ; x++) {
+                for (let y = 0; y < this.Tiles[i].pixels[x].length; y++) {
+                    writer.int8(this.Tiles[i].pixels[x][y]);
                 }
             }
         }
 
-        // check for ion fury signature
-        if (art.Signature) {
-            console.log("done writing ion fury art!");
-        }
-
         return writer.bytes;
 
-    };
+    }
 
 }

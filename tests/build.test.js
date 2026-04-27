@@ -25,7 +25,7 @@ for (const game of games) {
         for (const scenario of Object.keys(json)) {
 
             // if scenario is set as null -> flag as skipped test
-            if (!json[scenario] || scenario !== "storage") {
+            if (!json[scenario] || (scenario !== "storage" && scenario !== "art")) {
                 test.skip(scenario);
                 continue;
             }
@@ -45,8 +45,9 @@ for (const game of games) {
                 // bytes of file to be tested
                 let bytes = null;
                 
-                // if scenario is "storage", we want to test the storage file itself
-                if (scenario === "storage") { 
+                // if scenario is "storage"
+                if (scenario === "storage") {
+                    // we want to test the storage file itself 
                     bytes = storageBytes;
                 } else if (json[scenario].path.indexOf(":") !== -1) { 
                     // if path is from disk, get bytes from disk
@@ -59,13 +60,8 @@ for (const game of games) {
                 // deserialize bytes into instance
                 const instance = scenario === "storage" ? storage : new Build.Models[modelName](bytes);
                 
-                // first check if instance can be serialized back to the same bytes
+                // first check if instance can be serialized back to the same bytes (roundtrip equality)
                 const serialized = instance.Serialize();
-
-                if (!Buffer.from(serialized).equals(Buffer.from(bytes))) {
-                    fs.writeFileSync(`tests/${game}-${scenario}-original.json`, JSON.stringify(Buffer.from(bytes), null, "\t"));
-                    fs.writeFileSync(`tests/${game}-${scenario}-serialized.json`, JSON.stringify(Buffer.from(serialized), null, "\t"));
-                }
 
                 assert.ok(
                     Buffer.from(serialized).equals(Buffer.from(bytes)), 
