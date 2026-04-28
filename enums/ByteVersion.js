@@ -85,24 +85,6 @@ Build.Enums.ByteVersion = {
     },
 
     // ==================================================
-    // SHADOW WARRIOR
-    // ==================================================
-
-    VOIDSW_2 : 101,
-
-    VOIDSW: (version) => {
-        return [
-            Build.Enums.ByteVersion.VOIDSW_2,
-        ].some(v => v == version);
-    },
-
-    SW: (version) => {
-        return (
-            Build.Enums.ByteVersion.VOIDSW(version)
-        );
-    },
-
-    // ==================================================
     // REDNECK RAMPAGE
     // ==================================================
 
@@ -117,6 +99,24 @@ Build.Enums.ByteVersion = {
     RR: (version) => {
         return (
             Build.Enums.ByteVersion.REDNUKEM(version)
+        );
+    },
+
+    // ==================================================
+    // SHADOW WARRIOR
+    // ==================================================
+
+    VOIDSW_2 : 101,
+
+    VOIDSW: (version) => {
+        return [
+            Build.Enums.ByteVersion.VOIDSW_2,
+        ].some(v => v == version);
+    },
+
+    SW: (version) => {
+        return (
+            Build.Enums.ByteVersion.VOIDSW(version)
         );
     },
 

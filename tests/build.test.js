@@ -25,7 +25,7 @@ for (const game of games) {
         for (const scenario of Object.keys(json)) {
 
             // if scenario is set as null -> flag as skipped test
-            if (!json[scenario] || (scenario !== "storage" && scenario !== "art" && scenario !== "palette" && scenario !== "lookup" && scenario !== "map")) {
+            if (!json[scenario]) {
                 test.skip(scenario);
                 continue;
             }
