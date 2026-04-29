@@ -13,9 +13,9 @@ Build.Models.Palette.DAT = class DAT extends Build.Models.Palette {
             for (let i = 0; i < this.Colors.length; i++) {
                 this.Colors[i] = {
                     // scale from 0...64 to 0...256 (DOS limitation)
-                    r: (reader.uint8() * 255) / 64,
-                    g: (reader.uint8() * 255) / 64,
-                    b: (reader.uint8() * 255) / 64
+                    r: reader.uint8() << 2,
+                    g: reader.uint8() << 2,
+                    b: reader.uint8() << 2
                 };
             }
         }
@@ -47,9 +47,9 @@ Build.Models.Palette.DAT = class DAT extends Build.Models.Palette {
 
         for (const color of this.Colors) {
             // scale from 0...256 to 0...64 (DOS limitation)
-            writer.int8(Math.round((color.r * 64) / 255));
-            writer.int8(Math.round((color.g * 64) / 255));
-            writer.int8(Math.round((color.b * 64) / 255));
+            writer.int8(color.r >> 2);
+            writer.int8(color.g >> 2);
+            writer.int8(color.b >> 2);
         }
 
         writer.int16(this.Shades.length);
