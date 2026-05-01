@@ -1,0 +1,29 @@
+{
+    "storage": {
+        "path": "C:\\Games\\Build Engine Stuff\\games\\BLOOD_CRYPTIC_SSI_FILE_ORIGINAL_RELEASE\\CRYPTIC.SSI",
+        "expected-files": [
+            { "name": "CPART07.AR_", "size": 1170729 },
+            { "name": "CPART15.AR_", "size": 3335444 },
+            { "name": "CRYPTIC.EXE", "size": 11728 },
+            { "name": "CRYPTIC.INI", "size": 4035 },
+            { "name": "CP01.MAP", "size": 327015 },
+            { "name": "CP02.MAP", "size": 295323 },
+            { "name": "CP03.MAP", "size": 190223 },
+            { "name": "CP04.MAP", "size": 250535 },
+            { "name": "CP05.MAP", "size": 233263 },
+            { "name": "CP06.MAP", "size": 234907 },
+            { "name": "CP07.MAP", "size": 185115 },
+            { "name": "CP08.MAP", "size": 219087 },
+            { "name": "CP09.MAP", "size": 405263 },
+            { "name": "CPBB01.MAP", "size": 95623 },
+            { "name": "CPBB02.MAP", "size": 115979 },
+            { "name": "CPBB03.MAP", "size": 64987 },
+            { "name": "CPBB04.MAP", "size": 132547 },
+            { "name": "CPSL.MAP", "size": 110839 },
+            { "name": "HACK.SCP", "size": 3 },
+            { "name": "UNHACK.SCP", "size": 3 },
+            { "name": "CRYPTIC.SMK", "size": 1331452 },
+            { "name": "CRYPTIC.WAV", "size": 1036332 }
+        ]
+    }
+}
