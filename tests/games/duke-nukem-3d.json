@@ -1,6 +1,6 @@
 {
 	"storage": {
-		"path": "C:/Games/Build Engine Games/Duke Nukem 3D/ports/produke/duke3d.grp",
+		"path": "C:/Games/Build Engine Stuff/Build Engine Games/Duke Nukem 3D/DUKE3D15.GRP",
 		"expected-files": [
 			{ "name": "LOGO.ANM", "size": 1507336 },
 			{ "name": "CINEOV2.ANM", "size": 655497 },

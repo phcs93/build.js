@@ -1,6 +1,6 @@
 {
     "storage": {
-        "path": "C:/Games/Build Engine Stuff/games/DUKE3D_ADDONS_SSI_FILE_ORIGINAL_RELEASES/DUKEDC13.SSI",
+        "path": "C:/Games/Build Engine Stuff/Build Engine Games/Duke Nukem 3D/DUKEDC13.SSI",
         "expected-files": [
             { "name": "CINEOV3.ANM", "size": 2858 },
             { "name": "DUKETEAM.ANM", "size": 363176 },

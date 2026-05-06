@@ -4,11 +4,11 @@ Build.Enums.ByteVersion = {
     // DUKE
     // ==================================================
 
-    DOS_1_3               : 1,
-    DOS_1_3_1_4_Plutonium : 27,
-    DOS_1_4_Plutonium     : 116,
-    DOS_1_3_1_5_Engine    : 28,
-    DOS_1_5_Atomic        : 117,
+    DOSDUKE_1_3               : 1,
+    DOSDUKE_1_3_1_4_Plutonium : 27,
+    DOSDUKE_1_4_Plutonium     : 116,
+    DOSDUKE_1_3_1_5_Engine    : 28,
+    DOSDUKE_1_5_Atomic        : 117,
     
     XDUKE_19_6_1_3        : 29,
     XDUKE_19_6_1_5_Atomic : 118,
@@ -31,11 +31,11 @@ Build.Enums.ByteVersion = {
 
     DOSDUKE: (version) => {
         return [
-            Build.Enums.ByteVersion.DOS_1_3,
-            Build.Enums.ByteVersion.DOS_1_3_1_4_Plutonium,
-            Build.Enums.ByteVersion.DOS_1_4_Plutonium,
-            Build.Enums.ByteVersion.DOS_1_3_1_5_Engine,
-            Build.Enums.ByteVersion.DOS_1_5_Atomic,
+            Build.Enums.ByteVersion.DOSDUKE_1_3,
+            Build.Enums.ByteVersion.DOSDUKE_1_3_1_4_Plutonium,
+            Build.Enums.ByteVersion.DOSDUKE_1_4_Plutonium,
+            Build.Enums.ByteVersion.DOSDUKE_1_3_1_5_Engine,
+            Build.Enums.ByteVersion.DOSDUKE_1_5_Atomic,
         ].some(v => v == version);
     },
 

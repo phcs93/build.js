@@ -6,6 +6,7 @@ Build.Models.Map = class Map {
             case 0x00000008: return new Build.Models.Map.MAP(bytes); // MAP
             case 0x00000009: return new Build.Models.Map.MAP(bytes); // MAP
             case 0x1A4D4C42: return new Build.Models.Map.BLM(bytes); // BLM\x1a
+            case 0x1B4D4C42: return new Build.Models.Map.BLM(bytes); // BLM\x1b
         }
     }
 

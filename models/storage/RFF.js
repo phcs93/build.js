@@ -86,24 +86,27 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
 
     Serialize() {
 
-        // file content size offsets (initialize pointing to after the rff header)
+        // we need to reset the file header offset to start counting again
         this.FileHeadersOffset = 32;
 
+        // copy files to we dont modify the storage instance fields
+        const files = this.Files.map(f => ({...f}));
+
         // process file contents before performing any calculations
-        for (let i = 0; i < this.Files.length; i++) {
+        for (let i = 0; i < files.length; i++) {
             // check if file needs to be encrypted
-            if (this.Files[i].flags & 16) {
+            if (files[i].flags & 16) {
                 // encrypt file bytes
-                this.Files[i].bytes = Build.Scripts.ENCXOR.Compute(this.Files[i].bytes, { 
+                files[i].bytes = Build.Scripts.ENCXOR.Compute(files[i].bytes, { 
                     seed: 0, 
                     offset: 0, 
                     limit: 256, 
                     shift: 1 // used by my custom hybrid implementation
                 });
             }
-            this.Files[i].size = this.Files[i].bytes.length;
-            this.Files[i].offset = this.FileHeadersOffset;
-            this.FileHeadersOffset += this.Files[i].size;
+            files[i].size = files[i].bytes.length;
+            files[i].offset = this.FileHeadersOffset;
+            this.FileHeadersOffset += files[i].size;
         }
 
         const writer = new Build.Scripts.ByteWriter();
@@ -116,23 +119,23 @@ Build.Models.Storage.RFF = class RFF extends Build.Models.Storage {
         writer.write(this.Padding2);        
         
         // write file contents
-        for (let i = 0; i < this.Files.length; i++) {            
-            writer.write(this.Files[i].bytes);
+        for (let i = 0; i < files.length; i++) {
+            writer.write(files[i].bytes);
         }
 
         const fileHeaderWriter = new Build.Scripts.ByteWriter();
 
         // write files headers
-        for (let i = 0; i < this.Files.length; i++) {
-            fileHeaderWriter.write(this.Files[i].cache || new Uint8Array(16).fill(0));
-            fileHeaderWriter.int32(this.Files[i].offset);
-            fileHeaderWriter.int32(this.Files[i].size);
-            fileHeaderWriter.int32(this.Files[i].packedSize);
-            fileHeaderWriter.int32(this.Files[i].time || Build.Scripts.DateTime.ToUnixDateTime(new Date()));
-            fileHeaderWriter.int8(this.Files[i].flags);
-            fileHeaderWriter.string(this.Files[i].name.split(".")[1], 3);
-            fileHeaderWriter.string(this.Files[i].name.split(".")[0], 8);
-            fileHeaderWriter.int32(this.Files[i].id || 0);
+        for (let i = 0; i < files.length; i++) {
+            fileHeaderWriter.write(files[i].cache || new Uint8Array(16).fill(0));
+            fileHeaderWriter.int32(files[i].offset);
+            fileHeaderWriter.int32(files[i].size);
+            fileHeaderWriter.int32(files[i].packedSize);
+            fileHeaderWriter.int32(files[i].time || Build.Scripts.DateTime.ToUnixDateTime(new Date()));
+            fileHeaderWriter.int8(files[i].flags);
+            fileHeaderWriter.string(files[i].name.split(".")[1], 3);
+            fileHeaderWriter.string(files[i].name.split(".")[0], 8);
+            fileHeaderWriter.int32(files[i].id || 0);
         }
 
         // 0x0200 - shareware 0.99 (CD version) - FAT is not encrypted

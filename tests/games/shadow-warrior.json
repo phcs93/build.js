@@ -1,6 +1,6 @@
 {
 	"storage": {
-		"path": "C:/Games/Build Engine Games/Shadow Warrior/ports/voidsw/sw.grp",
+		"path": "C:/Games/Build Engine Stuff/Build Engine Games/Shadow Warrior/SW.GRP",
 		"expected-files": [
 			{ "name": "SWREG.BIN", "size": 4000 },
 			{ "name": "SWCODE.SYM", "size": 138960 },
@@ -708,7 +708,7 @@
 		"expected-tiles": 256
 	},
 	"demo": {
-		"path": "C:\\Games\\Build Engine Games\\Shadow Warrior\\ports\\voidsw\\demo.dmo",
+		"path": "C:/Games/Build Engine Stuff/Build Engine Games/Shadow Warrior/DEMO1.DMO",
 		"expected-inputs": 2706
 	},
 	"palette": {

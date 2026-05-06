@@ -1,6 +1,6 @@
 {
     "storage": {
-        "path": "C:\\Games\\Build Engine Stuff\\games\\BLOOD_CRYPTIC_SSI_FILE_ORIGINAL_RELEASE\\CRYPTIC.SSI",
+        "path": "C:/Games/Build Engine Stuff/Build Engine Games/BLOOD/CRYPTIC.SSI",
         "expected-files": [
             { "name": "CPART07.AR_", "size": 1170729 },
             { "name": "CPART15.AR_", "size": 3335444 },

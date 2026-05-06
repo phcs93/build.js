@@ -1,6 +1,6 @@
 {
 	"storage": {
-		"path": "C:/Games/Build Engine Games/Redneck Rampage/ports/rednukem/redneck.grp",
+		"path": "C:/Games/Build Engine Stuff/Build Engine Games/Redneck Rampage/REDNECK.GRP",
 		"expected-files": [
 			{ "name": "TILES001.ART", "size": 5404238 },
 			{ "name": "TILES000.ART", "size": 1399557 },
@@ -456,7 +456,7 @@
 		"expected-tiles": 256
 	},
 	"demo": {
-		"path": "C:\\Games\\Build Engine Games\\Redneck Rampage\\ports\\rednukem\\DEMO1.DMO",
+		"path": "C:/Games/Build Engine Stuff/Build Engine Games/Redneck Rampage/DEMO1.DMO",
 		"expected-inputs": 2706
 	},
 	"palette": {

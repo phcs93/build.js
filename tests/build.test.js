@@ -59,7 +59,7 @@ for (const game of games) {
 
                 // deserialize bytes into instance
                 const instance = scenario === "storage" ? storage : new Build.Models[modelName](bytes);
-                
+
                 // first check if instance can be serialized back to the same bytes (roundtrip equality)
                 const serialized = instance.Serialize();
 

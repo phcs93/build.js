@@ -1,6 +1,6 @@
 {
 	"storage": {
-		"path": "C:/Games/Build Engine Games/Blood/ports/notblood/blood.rff",
+		"path": "C:/Games/Build Engine Stuff/Build Engine Games/BLOOD/BLOOD.RFF",
 		"expected-files": [
 			{ "name": "COPYRITE.TXT", "size": 71 },
 			{ "name": "NORMAL.PLU", "size": 16384 },
@@ -683,17 +683,17 @@
 		]
 	},
 	"map": {
-		"path": "C:\\Games\\Build Engine Games\\Blood\\blm.map",
+		"path": "E1M1.MAP",
 		"expected-sectors": 155,
 		"expected-walls": 1498,
 		"expected-sprites": 559
 	},
 	"art": {
-		"path": "C:/Games/Build Engine Games/Blood/ports/notblood/TILES000.ART",
+		"path": "C:/Games/Build Engine Stuff/Build Engine Games/BLOOD/TILES000.ART",
 		"expected-tiles": 256
 	},
 	"demo": {
-		"path": "C:/Games/Build Engine Games/Blood/ports/notblood/BLOOD000.DEM",
+		"path": "C:/Games/Build Engine Stuff/Build Engine Games/BLOOD/BLOOD000.DEM",
 		"expected-inputs": 666
 	},
 	"palette": {},
