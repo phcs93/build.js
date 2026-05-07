@@ -122,7 +122,7 @@ for (const game of games) {
                             try {
                                 assert.deepStrictEqual(actual, expected);
                             } catch (e) {
-                                fs.writeFileSync(`./${game}-${scenario}.json`, JSON.stringify(instance.Files.map(f => ({ name: str(f.name), size: f.size })), null, "\t"));
+                                fs.writeFileSync(`./tests/actuall-${game}-${scenario}-${definition.path.split("/").pop()}.json`, JSON.stringify(instance.Files.map(f => ({ name: str(f.name), size: f.size })), null, "\t"));
                                 throw e;
                             }
 
