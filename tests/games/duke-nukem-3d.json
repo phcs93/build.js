@@ -1,7 +1,7 @@
 {
 	"storage": [
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Duke Nukem 3D/DUKE3D.GRP",
+			"path": "C:/Games/Build Engine Games/Duke Nukem 3D/files/DUKE3D.GRP",
 			"expected-files": [
 				{ "name": "LOGO.ANM", "size": 1507336 },
 				{ "name": "CINEOV2.ANM", "size": 655497 },
@@ -462,7 +462,7 @@
 			]
 		},
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Duke Nukem 3D/NWINTER.GRP",
+			"path": "C:/Games/Build Engine Games/Duke Nukem 3D/files/NWINTER.GRP",
 			"expected-files": [
 				{ "name": "TILES005.ART", "size": 950781 },
 				{ "name": "TILES006.ART", "size": 607252 },
@@ -537,7 +537,7 @@
 			]
 		},
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Duke Nukem 3D/VACATION.GRP",
+			"path": "C:/Games/Build Engine Games/Duke Nukem 3D/files/VACATION.GRP",
 			"expected-files": [
 				{ "name": "ADDREE.VOC", "size": 79959 },
 				{ "name": "BALLBOOM.VOC", "size": 1806 },
@@ -671,7 +671,7 @@
 			]
 		},
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Duke Nukem 3D/DUKEDC.GRP",
+			"path": "C:/Games/Build Engine Games/Duke Nukem 3D/files/DUKEDC.GRP",
 			"expected-files": [
 				{ "name": "BLANK.VOC", "size": 11068 },
 				{ "name": "CINEOV3.ANM", "size": 2858 },
@@ -700,7 +700,7 @@
 			]
 		},
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Duke Nukem 3D/obsolete/DUKEDC13.SSI",
+			"path": "C:/Games/Build Engine Games/Duke Nukem 3D/files/obsolete/DUKEDC13.SSI",
 			"expected-files": [
 				{ "name": "CINEOV3.ANMT", "size": 2858 },
 				{ "name": "DUKETEAM.ANM", "size": 363176 },
@@ -727,7 +727,7 @@
 			]
 		},
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Duke Nukem 3D/obsolete/VACATION15.SSI",
+			"path": "C:/Games/Build Engine Games/Duke Nukem 3D/files/obsolete/VACATION15.SSI",
 			"expected-files": [
 				{ "name": "CARIB.EXEPRG", "size": 17632 },
 				{ "name": "VACADM1.MAPG", "size": 18818 },

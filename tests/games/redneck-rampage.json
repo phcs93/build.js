@@ -1,7 +1,7 @@
 {
 	"storage": [
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Redneck Rampage/REDNECK.GRP",
+			"path": "C:/Games/Build Engine Games/Redneck Rampage/files/REDNECK.GRP",
 			"expected-files": [
 				{ "name": "TILES001.ART", "size": 5404238 },
 				{ "name": "TILES000.ART", "size": 1399557 },
@@ -447,7 +447,7 @@
 			]
 		},
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Redneck Rampage/RA.GRP",
+			"path": "C:/Games/Build Engine Games/Redneck Rampage/files/RA.GRP",
 			"expected-files": [
 				{ "name": "LOOKUP.DAT", "size": 10266 },
 				{ "name": "PALETTE.DAT", "size": 82690 },
@@ -1069,7 +1069,7 @@
 			]
 		},
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Redneck Rampage/HUNTING.GRP",
+			"path": "C:/Games/Build Engine Games/Redneck Rampage/files/HUNTING.GRP",
 			"expected-files": [
 				{ "name": "WATRRUN.VOC", "size": 43725 },
 				{ "name": "FIREPIST.VOC", "size": 70271 },
@@ -1193,7 +1193,7 @@
 			]
 		},
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Redneck Rampage/RT66.GRP",
+			"path": "C:/Games/Build Engine Games/Redneck Rampage/files/RT66.GRP",
 			"expected-files": [
 				{ "name": "END66.ANMFi", "size": 5114624 },
 				{ "name": "TURD66.ANMi", "size": 2858 },
@@ -1228,7 +1228,7 @@
 			]
 		},
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Redneck Rampage/CUSSPACK.GRP",
+			"path": "C:/Games/Build Engine Games/Redneck Rampage/files/CUSSPACK.GRP",
 			"expected-files": [
 				{ "name": "COOT.CON", "size": 9534 },
 				{ "name": "BR_ITCH.VOC", "size": 157712 },
@@ -1274,7 +1274,7 @@
 		"expected-tiles": 256
 	},
 	"demo": {
-		"path": "C:/Games/Build Engine Stuff/Build Engine Games/Redneck Rampage/DEMO1.DMO",
+		"path": "C:/Games/Build Engine Games/Redneck Rampage/files/DEMO1.DMO",
 		"expected-inputs": 1262
 	},
 	"palette": {
@@ -1289,7 +1289,7 @@
 		"expected-alternative-palettes": 5
 	},
 	"rts": {
-        "path": "C:/Games/Build Engine Stuff/Build Engine Games/Redneck Rampage/REDNECK.RTS",
+        "path": "C:/Games/Build Engine Games/Redneck Rampage/files/REDNECK.RTS",
         "expected-files": [
             { "name": "REMOSTRT", "size": 0 },
             { "name": "RTS1", "size": 72087 },

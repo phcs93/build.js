@@ -1,6 +1,6 @@
 {
 	"storage": {
-		"path": "C:/Games/Build Engine Stuff/Build Engine Games/Ion Fury/AFTERSHOCK.GRP",
+		"path": "C:/Games/Build Engine Games/Ion Fury/files/AFTERSHOCK.GRP",
 		"expected-files": [
 			{ "name": "scripts/", "size": 0 },
 			{ "name": "scripts/base/", "size": 0 },

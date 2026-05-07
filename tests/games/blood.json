@@ -1,7 +1,7 @@
 {
 	"storage": [
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/BLOOD/BLOOD.RFF",
+			"path": "C:/Games/Build Engine Games/BLOOD/files/BLOOD.RFF",
 			"expected-files": [
 				{ "name": "COPYRITE.TXT", "size": 71 },
 				{ "name": "NORMAL.PLU", "size": 16384 },
@@ -684,7 +684,7 @@
 			]
 		},
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/BLOOD/CRYPTIC.SSI",
+			"path": "C:/Games/Build Engine Games/BLOOD/files/CRYPTIC.SSI",
 			"expected-files": [
 				{ "name": "CPART07.AR_", "size": 1170729 },
 				{ "name": "CPART15.AR_", "size": 3335444 },
@@ -718,11 +718,11 @@
 		"expected-sprites": 559
 	},
 	"art": {
-		"path": "C:/Games/Build Engine Stuff/Build Engine Games/BLOOD/TILES000.ART",
+		"path": "C:/Games/Build Engine Games/BLOOD/files/TILES000.ART",
 		"expected-tiles": 256
 	},
 	"demo": {
-		"path": "C:/Games/Build Engine Stuff/Build Engine Games/BLOOD/BLOOD000.DEM",
+		"path": "C:/Games/Build Engine Games/BLOOD/files/BLOOD000.DEM",
 		"expected-inputs": 3505
 	},
 	"palette": {},

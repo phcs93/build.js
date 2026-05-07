@@ -1,7 +1,7 @@
 {
 	"storage": [
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Shadow Warrior/SW.GRP",
+			"path": "C:/Games/Build Engine Games/Shadow Warrior/files/SW.GRP",
 			"expected-files": [
 				{ "name": "SWREG.BIN", "size": 4000 },
 				{ "name": "SWCODE.SYM", "size": 138960 },
@@ -699,7 +699,7 @@
 			]
 		},
 		{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Shadow Warrior/TD.GRP",
+			"path": "C:/Games/Build Engine Games/Shadow Warrior/files/TD.GRP",
 			"expected-files": [
 				{ "name": "$AIRPORT.MAP", "size": 214374 },
 				{ "name": "$BATH.MAP", "size": 301366 },
@@ -790,7 +790,7 @@
 			]
 		},
 				{
-			"path": "C:/Games/Build Engine Stuff/Build Engine Games/Shadow Warrior/WT.GRP",
+			"path": "C:/Games/Build Engine Games/Shadow Warrior/files/WT.GRP",
 			"expected-files": [
 				{ "name": "VOLSTM1.VOC", "size": 8145 },
 				{ "name": "SW.ANM", "size": 418832 },
@@ -1504,7 +1504,7 @@
 		"expected-tiles": 256
 	},
 	"demo": {
-		"path": "C:/Games/Build Engine Stuff/Build Engine Games/Shadow Warrior/DEMO1.DMO",
+		"path": "C:/Games/Build Engine Games/Shadow Warrior/files/DEMO1.DMO",
 		"expected-inputs": 4097
 	},
 	"palette": {
@@ -1515,7 +1515,7 @@
 	},
 	"lookup": null,
 	"rts": {
-        "path": "C:/Games/Build Engine Stuff/Build Engine Games/Shadow Warrior/SW.RTS",
+        "path": "C:/Games/Build Engine Games/Shadow Warrior/files/SW.RTS",
         "expected-files": [
 			{ "name": "REMOSTRT", "size": 0 },
 			{ "name": "BBURN04", "size": 35985 },
