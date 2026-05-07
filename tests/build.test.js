@@ -17,7 +17,7 @@ for (const game of games) {
         const json = require(`./games/${game}.json`);
         
         // get storage file bytes
-        const storageBytes = fs.readFileSync(json.storage.path);
+        const storageBytes = fs.readFileSync(json.storage instanceof Array ? json.storage[0].path : json.storage.path);
 
         // get game file storage instance
         const storage = new Build.Models.Storage(storageBytes);
@@ -40,68 +40,93 @@ for (const game of games) {
             // create a unit test for each scenario defintion
             test(scenario, (t) => {
 
-                // each scenario is coveniently named after the model it is testing
-                const modelName = format(scenario);
+                // a scenario might have multiple cases, so we try to iterate through them if scenario is an array
+                const definitions = json[scenario] instanceof Array ? json[scenario] : [json[scenario]];
 
-                // bytes of file to be tested
-                let bytes = null;
-                
-                // if scenario is "storage"
-                if (scenario === "storage") {
-                    // we want to test the storage file itself 
-                    bytes = storageBytes;
-                } else if (json[scenario].path.indexOf(":") !== -1) { 
-                    // if path is from disk, get bytes from disk
-                    bytes = fs.readFileSync(json[scenario].path);
-                } else { 
-                    // otherwise get bytes from storage instance
-                    bytes = storage.Files.filter(f => str(f.name) === json[scenario].path)[0].bytes;
-                }
+                for (const definition of definitions) {
 
-                // deserialize bytes into instance
-                const instance = scenario === "storage" ? storage : scenario === "rts" ? new Build.Models.Storage.WAD.RTS(bytes) : new Build.Models[modelName](bytes);
+                    console.log(`testing ${game} ${scenario}...`);
 
-                // first check if instance can be serialized back to the same bytes (roundtrip equality)
-                const serialized = instance.Serialize();
+                    // each scenario is coveniently named after the model it is testing
+                    const modelName = format(scenario);
 
-                assert.ok(
-                    Buffer.from(serialized).equals(Buffer.from(bytes)), 
-                    serialized.length !== bytes.length ? 
-                    `original length = ${bytes.length} | serialized length = ${serialized.length}` :
-                    "lengths are equal but bytes are different"
-                );
+                    // bytes of file to be tested
+                    let bytes = null;
+                    
+                    if (definition.path.indexOf(":") !== -1) { 
+                        // if path is from disk, get bytes from disk
+                        bytes = fs.readFileSync(definition.path);
+                    } else { 
+                        // otherwise get bytes from storage instance
+                        bytes = storage.Files.filter(f => str(f.name) === definition.path)[0].bytes;
+                    }
 
-                // now check if instance has expected properties
-                for (const key of Object.keys(json[scenario])) {
+                    // deserialize bytes into instance
+                    const instance = scenario === "rts" ? new Build.Models.Storage.WAD.RTS(bytes) : new Build.Models[modelName](bytes);
 
-                    if (key.startsWith("expected-")) {
+                    // first check if instance can be serialized back to the same bytes (roundtrip equality)
+                    const serialized = instance.Serialize();
 
-                        const property = format(key.replace("expected-", ""));
-                        const expected = json[scenario][key];
-                        let actual = null;
+                    if (scenario === "storage") {
+                        t.test(definition.path.split("/").pop(), () => {
+                            assert.ok(
+                                Buffer.from(serialized).equals(Buffer.from(bytes)), 
+                                serialized.length !== bytes.length ? 
+                                `original length = ${bytes.length} | serialized length = ${serialized.length}` :
+                                "lengths are equal but bytes are different"
+                            );
+                        });
+                    } else {
+                        assert.ok(
+                            Buffer.from(serialized).equals(Buffer.from(bytes)), 
+                            serialized.length !== bytes.length ? 
+                            `original length = ${bytes.length} | serialized length = ${serialized.length}` :
+                            "lengths are equal but bytes are different"
+                        );
+                    }
 
-                        if (instance[property] instanceof Array && typeof expected === "number") {
-                            actual = instance[property].length;
-                        } else if (instance[property] instanceof Array && expected instanceof Array) {
-                            if (instance[property][0] instanceof Object && expected[0] instanceof Object) {
-                                const keys = Object.keys(expected[0]);
-                                actual = instance[property].map(i => {
-                                    const o = {};
-                                    for (const k of keys) {
-                                        if (typeof i[k] === "string") {
-                                            o[k] = str(i[k]);
-                                        } else {
-                                            o[k] = i[k];
+                    // now check if instance has expected properties
+                    for (const key of Object.keys(definition)) {
+
+                        if (key.startsWith("expected-")) {
+
+                            const property = format(key.replace("expected-", ""));
+                            const expected = definition[key];
+                            let actual = null;
+
+                            if (instance[property] instanceof Array && typeof expected === "number") {
+                                actual = instance[property].length;
+                            } else if (instance[property] instanceof Array && expected instanceof Array) {
+                                if (instance[property][0] instanceof Object && expected[0] instanceof Object) {
+                                    const keys = Object.keys(expected[0]);
+                                    actual = instance[property].map(i => {
+                                        const o = {};
+                                        for (const k of keys) {
+                                            if (typeof i[k] === "string") {
+                                                o[k] = str(i[k]);
+                                            } else {
+                                                o[k] = i[k];
+                                            }
                                         }
-                                    }
-                                    return o;
-                                });
-                            } else {
-                                actual = instance[property];
-                            }                            
-                        }
+                                        return o;
+                                    });
+                                } else {
+                                    actual = instance[property];
+                                }                            
+                            }
 
-                        assert.deepStrictEqual(actual, expected);
+                            if (actual !== expected) {
+                                
+                            }
+
+                            try {
+                                assert.deepStrictEqual(actual, expected);
+                            } catch (e) {
+                                fs.writeFileSync(`./${game}-${scenario}.json`, JSON.stringify(instance.Files.map(f => ({ name: str(f.name), size: f.size })), null, "\t"));
+                                throw e;
+                            }
+
+                        }
 
                     }
 
