@@ -38,7 +38,7 @@ Build.Models.Storage.SSI = class SSI extends Build.Models.Storage {
                 size: reader.uint32(),
                 fill: reader.read(34+1+69),
                 bytes: null
-            }
+            };
         }
 
         for (let i = 0; i < this.Files.length; i++) {

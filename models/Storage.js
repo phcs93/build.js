@@ -7,6 +7,8 @@ Build.Models.Storage = class Storage {
             case 0x04034B50: return new Build.Models.Storage.PK3(bytes); // PK\x03\x04
             case 0x00000001: return new Build.Models.Storage.SSI(bytes); // \x01\x00\x00\x00
             case 0x00000002: return new Build.Models.Storage.SSI(bytes); // \x02\x00\x00\x00
+            case 0x44415749: return new Build.Models.Storage.WAD(bytes); // IWAD
+            case 0x44415750: return new Build.Models.Storage.WAD(bytes); // PWAD
         }
     }
 

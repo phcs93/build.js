@@ -709,7 +709,7 @@
 	},
 	"demo": {
 		"path": "C:/Games/Build Engine Stuff/Build Engine Games/Shadow Warrior/DEMO1.DMO",
-		"expected-inputs": 2706
+		"expected-inputs": 4097
 	},
 	"palette": {
 		"path": "PALETTE.DAT",
@@ -717,5 +717,23 @@
 		"expected-shades": 32,
 		"expected-translucency": 256
 	},
-	"lookup": null
+	"lookup": null,
+	"rts": {
+        "path": "C:/Games/Build Engine Stuff/Build Engine Games/Shadow Warrior/SW.RTS",
+        "expected-files": [
+			{ "name": "REMOSTRT", "size": 0 },
+			{ "name": "BBURN04", "size": 35985 },
+			{ "name": "JG6018", "size": 18836 },
+			{ "name": "JG6021", "size": 30006 },
+			{ "name": "JG6027", "size": 29002 },
+			{ "name": "JG6043", "size": 37747 },
+			{ "name": "JG6048", "size": 19648 },
+			{ "name": "JG6046", "size": 18984 },
+			{ "name": "JG1070", "size": 26737 },
+			{ "name": "IHOPE01", "size": 29091 },
+			{ "name": "ITTAI02", "size": 21386 },
+			{ "name": "REMOSTOP", "size": 0 }
+        ]
+    }
 }
+

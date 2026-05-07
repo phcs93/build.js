@@ -1,0 +1,23 @@
+{
+    "storage": {
+        "path": "C:/Games/Build Engine Stuff/Build Engine Games/Duke Nukem 3D/VACATION15.SSI",
+        "expected-files": [
+            { "name": "CARIB.EXEPRG", "size": 17632 },
+            { "name": "VACADM1.MAPG", "size": 18818 },
+            { "name": "VACADM2.MAPG", "size": 18478 },
+            { "name": "VACADM3.MAPG", "size": 43866 },
+            { "name": "VACADM4.MAPG", "size": 23778 },
+            { "name": "DEFS.NOCEPRG", "size": 36087 },
+            { "name": "GAME.NOCEPRG", "size": 98716 },
+            { "name": "USER.NOCEPRG", "size": 45647 },
+            { "name": "DEMO1.OMDPRG", "size": 4995 },
+            { "name": "DEMO2.OMDPRG", "size": 4995 },
+            { "name": "DEMO3.OMDPRG", "size": 4995 },
+            { "name": "MOD.PCSMDPRG", "size": 145 },
+            { "name": "UNMOD.PCSPRG", "size": 150 },
+            { "name": "VACATION.PRG", "size": 22201375 },
+            { "name": "HACK.SCP.PRG", "size": 0 },
+            { "name": "UNHACK.SCPRG", "size": 0 }
+        ]
+    }
+}

@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const Build = require("../build.js");
 
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);
+const format = s => s.split("-").map(capitalize).join("");
 const str = s => s.replace(/\x00/g, "")
 
 const games = fs.readdirSync("./tests/games").map(f => f.split(".")[0]);
@@ -37,10 +38,10 @@ for (const game of games) {
             }
 
             // create a unit test for each scenario defintion
-            test(scenario, () => {
+            test(scenario, (t) => {
 
                 // each scenario is coveniently named after the model it is testing
-                const modelName = capitalize(scenario)
+                const modelName = format(scenario);
 
                 // bytes of file to be tested
                 let bytes = null;
@@ -58,7 +59,7 @@ for (const game of games) {
                 }
 
                 // deserialize bytes into instance
-                const instance = scenario === "storage" ? storage : new Build.Models[modelName](bytes);
+                const instance = scenario === "storage" ? storage : scenario === "rts" ? new Build.Models.Storage.WAD.RTS(bytes) : new Build.Models[modelName](bytes);
 
                 // first check if instance can be serialized back to the same bytes (roundtrip equality)
                 const serialized = instance.Serialize();
@@ -69,6 +70,42 @@ for (const game of games) {
                     `original length = ${bytes.length} | serialized length = ${serialized.length}` :
                     "lengths are equal but bytes are different"
                 );
+
+                // now check if instance has expected properties
+                for (const key of Object.keys(json[scenario])) {
+
+                    if (key.startsWith("expected-")) {
+
+                        const property = format(key.replace("expected-", ""));
+                        const expected = json[scenario][key];
+                        let actual = null;
+
+                        if (instance[property] instanceof Array && typeof expected === "number") {
+                            actual = instance[property].length;
+                        } else if (instance[property] instanceof Array && expected instanceof Array) {
+                            if (instance[property][0] instanceof Object && expected[0] instanceof Object) {
+                                const keys = Object.keys(expected[0]);
+                                actual = instance[property].map(i => {
+                                    const o = {};
+                                    for (const k of keys) {
+                                        if (typeof i[k] === "string") {
+                                            o[k] = str(i[k]);
+                                        } else {
+                                            o[k] = i[k];
+                                        }
+                                    }
+                                    return o;
+                                });
+                            } else {
+                                actual = instance[property];
+                            }                            
+                        }
+
+                        assert.deepStrictEqual(actual, expected);
+
+                    }
+
+                }
 
             });
 

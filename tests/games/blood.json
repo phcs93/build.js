@@ -694,8 +694,9 @@
 	},
 	"demo": {
 		"path": "C:/Games/Build Engine Stuff/Build Engine Games/BLOOD/BLOOD000.DEM",
-		"expected-inputs": 666
+		"expected-inputs": 3505
 	},
 	"palette": {},
-	"lookup": {}	
+	"lookup": {},
+	"rts": {}
 }

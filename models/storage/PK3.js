@@ -29,7 +29,7 @@ Build.Models.Storage.PK3 = class PK3 extends Build.Models.Storage {
                 date: reader.uint16(),
                 crc32: reader.uint32(),
                 compressedSize: reader.uint32(),
-                uncompressedSize: reader.uint32(),
+                size: reader.uint32(),
                 nameLength: reader.uint16(),
                 extraLength: reader.uint16(),
                 name: "",
@@ -68,7 +68,7 @@ Build.Models.Storage.PK3 = class PK3 extends Build.Models.Storage {
             date: 0, // will be set in Serialize
             crc32: 0, // will be set in Serialize
             compressedSize: 0, // will be set in Serialize
-            uncompressedSize: bytes.length,
+            size: bytes.length,
             nameLength: name.length,
             extraLength: 0,
             name: name,

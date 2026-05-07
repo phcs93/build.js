@@ -484,5 +484,6 @@
 		"path": "LOOKUP.DAT",
 		"expected-swaps": 25,
 		"expected-alternative-palettes": 5
-	}
+	},
+	"rts": {}
 }

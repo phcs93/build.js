@@ -457,7 +457,7 @@
 	},
 	"demo": {
 		"path": "C:/Games/Build Engine Stuff/Build Engine Games/Redneck Rampage/DEMO1.DMO",
-		"expected-inputs": 2706
+		"expected-inputs": 1262
 	},
 	"palette": {
 		"path": "PALETTE.DAT",
@@ -469,5 +469,22 @@
 		"path": "LOOKUP.DAT",
 		"expected-swaps": 25,
 		"expected-alternative-palettes": 5
-	}
+	},
+	"rts": {
+        "path": "C:/Games/Build Engine Stuff/Build Engine Games/Redneck Rampage/REDNECK.RTS",
+        "expected-files": [
+            { "name": "REMOSTRT", "size": 0 },
+            { "name": "RTS1", "size": 72087 },
+            { "name": "RTS2", "size": 113923 },
+            { "name": "RTS3", "size": 91319 },
+            { "name": "RTS4", "size": 171249 },
+            { "name": "RTS5", "size": 121899 },
+            { "name": "RTS6", "size": 128999 },
+            { "name": "RTS7", "size": 59037 },
+            { "name": "RTS8", "size": 102571 },
+            { "name": "RTS9", "size": 121219 },
+            { "name": "RTS10", "size": 56363 },
+            { "name": "REMOSTOP", "size": 0 }
+        ]
+    }
 }
