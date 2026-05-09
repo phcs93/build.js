@@ -3,4 +3,6 @@ Build.Enums.StorageType = {
     PK3: "PK3", // fury
     RFF: "RFF", // blood
     SSI: "SSI", // dlc
+    RTS: "RTS", // rts
+    WAD: "WAD", // doom
 }
