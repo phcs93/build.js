@@ -751,12 +751,6 @@ Build.Enums.ByteVersion = {
 
 }
 
-Build.Enums.DemoType = {
-    DMO: "DMO",
-    SWD: "SWD",
-    BLD: "BLD"
-}
-
 Build.Enums.EffectorTag = {
     Pivot: 1,
     Earthquake: 2,
@@ -803,19 +797,6 @@ Build.Enums.EffectorTag = {
     AdjustWall: 128,
     Fireworks1: 130,
     Fireworks2: 131
-}
-
-Build.Enums.LookupType = {
-    DAT: "DAT"
-}
-
-Build.Enums.MapType = {
-    MAP: "MAP", // dn, rr, sw, fury
-    BLM: "BLM", // blood
-}
-
-Build.Enums.PaletteType = {
-    DAT: "DAT"
 }
 
 Build.Enums.Picnum = {
@@ -946,15 +927,6 @@ Build.Enums.SpriteCstat = {
     HitscanBlocking: 8,
     Transluscence2: 9,
     Invisible: 15
-}
-
-Build.Enums.StorageType = {
-    GRP: "GRP", // dn, rr, sw
-    PK3: "PK3", // fury
-    RFF: "RFF", // blood
-    SSI: "SSI", // dlc
-    RTS: "RTS", // rts
-    WAD: "WAD", // doom
 }
 
 Build.Enums.WallCstat = {
