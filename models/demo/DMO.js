@@ -14,7 +14,7 @@ Build.Models.Demo.DMO = class DMO extends Build.Models.Demo {
         this.Version = bytes ? reader.uint8() : 0;
 
         if (!Build.Enums.ByteVersion.DOSDUKE(this.Version) && !Build.Enums.ByteVersion.RR(this.Version)) {
-            this.GRPVersion = reader.read(4 * 4);
+            this.GRPCRC = new Array(4).fill(0).map(() => reader.uint32());
         }
         
         this.Volume = bytes ? reader.uint8() : 0;
@@ -83,7 +83,10 @@ Build.Models.Demo.DMO = class DMO extends Build.Models.Demo {
         writer.int8(this.Version);
 
         if (!Build.Enums.ByteVersion.DOSDUKE(this.Version) && !Build.Enums.ByteVersion.RR(this.Version)) {
-            writer.write(this.GRPVersion);
+            //writer.write(this.GRPVersion);
+            for (const crc of this.GRPCRC) {
+                writer.int32(crc);
+            }
         }
 
         writer.int8(this.Volume);
