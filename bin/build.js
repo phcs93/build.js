@@ -1261,7 +1261,7 @@ Build.Models.Demo.DMO = class DMO extends Build.Models.Demo {
         this.Version = bytes ? reader.uint8() : 0;
 
         if (!Build.Enums.ByteVersion.DOSDUKE(this.Version) && !Build.Enums.ByteVersion.RR(this.Version)) {
-            this.GRPVersion = reader.read(4 * 4);
+            this.GRPCRC = new Array(4).fill(0).map(() => reader.uint32());
         }
         
         this.Volume = bytes ? reader.uint8() : 0;
@@ -1330,7 +1330,10 @@ Build.Models.Demo.DMO = class DMO extends Build.Models.Demo {
         writer.int8(this.Version);
 
         if (!Build.Enums.ByteVersion.DOSDUKE(this.Version) && !Build.Enums.ByteVersion.RR(this.Version)) {
-            writer.write(this.GRPVersion);
+            //writer.write(this.GRPVersion);
+            for (const crc of this.GRPCRC) {
+                writer.int32(crc);
+            }
         }
 
         writer.int8(this.Volume);
@@ -2836,7 +2839,7 @@ Build.Models.Storage.WAD = class WAD extends Build.Models.Storage {
         this.Files = new Array(bytes ? reader.int32() : 0);
         this.Offset = bytes ? reader.int32() : 0;
 
-        const headerReader = new Build.Scripts.ByteReader(bytes.slice(this.Offset, this.Offset + this.Files.length * 16));
+        const headerReader = new Build.Scripts.ByteReader(bytes ? bytes.slice(this.Offset, this.Offset + this.Files.length * 16) : []);
 
         for (let i = 0; i < this.Files.length; i++) {
             this.Files[i] = {
@@ -2855,14 +2858,16 @@ Build.Models.Storage.WAD = class WAD extends Build.Models.Storage {
         }
 
         // check if this WAD is a RTS so we can convert it to the correct model
-        if (bytes && this.Signature === "IWAD" && this.Files[0].name === "REMOSTRT" && this.Files[this.Files.length-1].name === "REMOSTOP") {
+        if (bytes && this.Signature === "IWAD" && this.Files.length && this.Files[0].name === "REMOSTRT" && this.Files[this.Files.length-1].name === "REMOSTOP") {
             return new Build.Models.Storage.WAD.RTS(this);
         }
 
     }
 
     Serialize () {
-        
+
+        /*
+
         const writer = new Build.Scripts.ByteWriter();
 
         writer.string(this.Signature, 4);
@@ -2873,11 +2878,47 @@ Build.Models.Storage.WAD = class WAD extends Build.Models.Storage {
             writer.write(this.Files[i].bytes);
         }
 
+        let offset = 12;
+
         for (let i = 0; i < this.Files.length; i++) {
-            writer.int32(this.Files[i].offset);
-            writer.int32(this.Files[i].size);
-            writer.string(this.Files[i].name, 8);            
+            writer.int32(offset);
+            writer.int32(this.Files[i].bytes.length);
+            writer.string(this.Files[i].name, 8);
+            offset += this.Files[i].bytes.length;
         }
+
+        return writer.bytes;
+
+        */
+
+        // AI solution (not a fan)
+        
+        const writer = new Build.Scripts.ByteWriter();
+
+        const directorySize = this.Files.length * 16;
+        const dataSize = this.Files.reduce((size, file) => size + file.bytes.length, 0);
+        const firstDataOffset = this.Files.filter(file => file.bytes.length).reduce((offset, file) => Math.min(offset, file.offset), Infinity);
+        const directoryFirst = this.Files.length === 0 || this.Offset <= firstDataOffset;
+        const directoryOffset = directoryFirst ? 12 : 12 + dataSize;
+        const dataOffset = directoryFirst ? 12 + directorySize : 12;
+
+        writer.string(this.Signature, 4);
+        writer.int32(this.Files.length);
+        writer.int32(directoryOffset);
+
+        const writeDirectory = () => {
+            let offset = dataOffset;
+            for (const file of this.Files) {
+                writer.int32(file.bytes.length ? offset : file.offset);
+                writer.int32(file.bytes.length);
+                writer.string(file.name, 8);
+                offset += file.bytes.length;
+            }
+        };
+
+        if (directoryFirst) writeDirectory();
+        for (const file of this.Files) writer.write(file.bytes);
+        if (!directoryFirst) writeDirectory();
 
         return writer.bytes;
 
